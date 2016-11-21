@@ -30,6 +30,10 @@ import java.util.regex.Pattern;
 
 import fi.iki.elonen.NanoHTTPD;
 
+/***************************************
+ * Created by TheNightman on 11/21/16. *
+ ***************************************/
+
 public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     public interface OnPushReceivedListener {

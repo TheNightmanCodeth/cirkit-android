@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -18,9 +20,9 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-/**
- * Created by andrewdiragi on 11/21/16.
- */
+/***************************************
+ * Created by TheNightman on 11/21/16. *
+ ***************************************/
 
 public class CirkitService extends Service {
     CirkitServer server;
@@ -47,10 +49,14 @@ public class CirkitService extends Service {
             server = new CirkitServer(new MainActivity.OnPushReceivedListener() {
                 @Override
                 public void onPushRec(String push) {
+                    //Intent to launch when notification is clicked
+                    //TODO: Add intent flag containing push to add to local pushes db
                     final PendingIntent onNotiClick = PendingIntent
                             .getActivity(getApplicationContext(), 0,
                                     new Intent(getApplicationContext(), MainActivity.class), 0);
-
+                    //Get notification sound
+                    Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    //Create notification
                     nm = NotificationManagerCompat.from(getApplicationContext());
                     Notification noti = new Notification.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_noti)
@@ -58,9 +64,10 @@ public class CirkitService extends Service {
                             .setContentTitle("Push received")
                             .setContentText(push)
                             .setGroup(PUSHES_GROUP)
+                            .setSound(alarmSound)
                             .setContentIntent(onNotiClick)
                             .build();
-
+                    //Show notification
                     nm.notify(NEW_PUSH_NOT++, noti);
                     Log.e("PUSH RECEIVED", push);
                 }

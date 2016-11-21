@@ -11,9 +11,9 @@ import java.util.regex.Pattern;
 
 import fi.iki.elonen.NanoHTTPD;
 
-/**
- * Created by andrewdiragi on 11/21/16.
- */
+/***************************************
+ * Created by TheNightman on 11/21/16. *
+ ***************************************/
 
 public class CirkitServer extends NanoHTTPD {
     private MainActivity.OnPushReceivedListener listener;
@@ -50,6 +50,7 @@ public class CirkitServer extends NanoHTTPD {
 
     public String extractVal(String dataRaw) {
         //{"KEY","DATA DATA"}
+        //
         String re1=".*?";	// Non-greedy match on filler
         String re2="\".*?\"";	// Uninteresting: string
         String re3=".*?";	// Non-greedy match on filler
