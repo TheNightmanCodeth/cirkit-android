@@ -50,7 +50,7 @@ public class CirkitService extends Service {
 
                     nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
                     Notification noti = new Notification.Builder(getApplicationContext())
-                            .setSmallIcon(null)
+                            .setSmallIcon(R.drawable.ic_noti)
                             .setTicker(push)
                             .setContentTitle("Push received")
                             .setContentText(push)
@@ -76,14 +76,15 @@ public class CirkitService extends Service {
         PendingIntent pi = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
         Notification cirkitNoti = new Notification.Builder(this)
-                .setSmallIcon(null)
+                .setSmallIcon(R.drawable.ic_noti)
                 .setTicker("Cirkit")
                 .setWhen(System.currentTimeMillis())
                 .setContentTitle("Cirkit")
                 .setContentText("Cirkit is running in the background")
                 .setContentIntent(pi)
                 .build();
-        startForeground(1, cirkitNoti);
+        cirkitNoti.flags|=Notification.FLAG_NO_CLEAR;
+        startForeground(NOTIFICATION, cirkitNoti);
 
         return START_STICKY;
     }
