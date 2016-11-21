@@ -40,6 +40,7 @@ public class CirkitServer extends NanoHTTPD {
             tem = k.getKey();
         }
         String push = extractVal(tem);
+        listener.onPushRec(push);
         return new Response(Response.Status.OK, MIME_PLAINTEXT, "Push: " +push +" received");
     }
 

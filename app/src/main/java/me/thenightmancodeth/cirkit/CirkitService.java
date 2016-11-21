@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,11 +25,13 @@ import java.io.IOException;
 public class CirkitService extends Service {
     CirkitServer server;
     private final IBinder binder = new LocalBinder();
-    private NotificationManager nm;
+    private NotificationManagerCompat nm;
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
     WifiManager.WifiLock wifiLock;
     private final int NOTIFICATION = 4200;
+    private int NEW_PUSH_NOT = 6960;
+    private final String PUSHES_GROUP = "group_pushes";
 
     public class LocalBinder extends Binder {
         CirkitService getService() {
@@ -48,16 +51,18 @@ public class CirkitService extends Service {
                             .getActivity(getApplicationContext(), 0,
                                     new Intent(getApplicationContext(), MainActivity.class), 0);
 
-                    nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+                    nm = NotificationManagerCompat.from(getApplicationContext());
                     Notification noti = new Notification.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_noti)
                             .setTicker(push)
                             .setContentTitle("Push received")
                             .setContentText(push)
+                            .setGroup(PUSHES_GROUP)
                             .setContentIntent(onNotiClick)
                             .build();
 
-                    nm.notify(NOTIFICATION, noti);
+                    nm.notify(NEW_PUSH_NOT++, noti);
+                    Log.e("PUSH RECEIVED", push);
                 }
             });
             server.start();
