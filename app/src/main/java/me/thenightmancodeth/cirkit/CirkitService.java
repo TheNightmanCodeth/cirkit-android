@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -65,6 +66,8 @@ public class CirkitService extends Service {
                             .setContentText(push)
                             .setGroup(PUSHES_GROUP)
                             .setSound(alarmSound)
+                            .setLights(Color.CYAN, 3000, 3000)
+                            .setVibrate(new long[] {1000,1000})
                             .setContentIntent(onNotiClick)
                             .build();
                     //Show notification
