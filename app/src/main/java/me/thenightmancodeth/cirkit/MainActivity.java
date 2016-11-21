@@ -1,6 +1,7 @@
 package me.thenightmancodeth.cirkit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +31,6 @@ import java.util.regex.Pattern;
 import fi.iki.elonen.NanoHTTPD;
 
 public class MainActivity extends AppCompatActivity {
-    private CirkitServer server;
     private Handler handler = new Handler();
     public interface OnPushReceivedListener {
         void onPushRec(String push);
@@ -54,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         tv = (TextView) findViewById(R.id.text);
+
+        //Start cirkit service
+        Intent cirkitService = new Intent(this, CirkitServer.class);
+        startService(cirkitService);
     }
 
     @Override
@@ -65,26 +69,11 @@ public class MainActivity extends AppCompatActivity {
         final String formIP = String.format(Locale.US, "%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
         Toast.makeText(getApplicationContext(), "http://" +formIP +":6969", Toast.LENGTH_LONG).show();
-
-        try {
-            server = new CirkitServer(new OnPushReceivedListener() {
-                @Override
-                public void onPushRec(String push) {
-                    tv.setText(push);
-                }
-            });
-            server.start();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (server != null) {
-            server.stop();
-        }
     }
 
     @Override
@@ -107,52 +96,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private class CirkitServer extends NanoHTTPD {
-        private OnPushReceivedListener listener;
-        public CirkitServer(OnPushReceivedListener l) throws IOException {
-            super(6969);
-            this.listener = l;
-        }
-
-        @Override
-        public Response serve(IHTTPSession session) {
-            Map<String, String> jsonBody = new HashMap<String, String>();
-            Method method = session.getMethod();
-            if (method.POST.equals(method)) {
-                try {
-                    session.parseBody(jsonBody);
-                } catch (IOException ioe) {
-                    return new Response(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
-                } catch (ResponseException re) {
-                    return new Response(re.getStatus(), MIME_PLAINTEXT, re.getMessage());
-                }
-            }
-            String tem = "";
-            for (Map.Entry<String, String> k: session.getParms().entrySet()) {
-                tem = k.getKey();
-                Log.e("REGEX", k.getKey());
-            }
-            final String dataRaw = tem;
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    String push = extractVal(dataRaw);
-                    Toast.makeText(getApplicationContext(), "Push received: " +push, Toast.LENGTH_LONG).show();
-                }
-            });
-            return new Response(Response.Status.OK, MIME_PLAINTEXT, "Push:  received successfully");
-        }
-    }
-
-    public String extractVal(String dataRaw) {
-        String test = ".+:\"(.+)\"";
-        Pattern patt = Pattern.compile(test,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher matc = patt.matcher(dataRaw);
-        if (matc.find()) {
-            return matc.group(1);
-        }
-        return null;
     }
 }

@@ -1,0 +1,106 @@
+package me.thenightmancodeth.cirkit;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.net.wifi.WifiManager;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.PowerManager;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.widget.Toast;
+
+import java.io.IOException;
+
+/**
+ * Created by andrewdiragi on 11/21/16.
+ */
+
+public class CirkitService extends Service {
+    CirkitServer server;
+    private final IBinder binder = new LocalBinder();
+    private NotificationManager nm;
+    PowerManager powerManager;
+    PowerManager.WakeLock wakeLock;
+    WifiManager.WifiLock wifiLock;
+    private final int NOTIFICATION = 4200;
+
+    public class LocalBinder extends Binder {
+        CirkitService getService() {
+            return this.getService();
+        }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i("Cirkit_Service", "Received start id " +startId +": " +intent);
+        //Start cirkit server
+        try {
+            server = new CirkitServer(new MainActivity.OnPushReceivedListener() {
+                @Override
+                public void onPushRec(String push) {
+                    final PendingIntent onNotiClick = PendingIntent
+                            .getActivity(getApplicationContext(), 0,
+                                    new Intent(getApplicationContext(), MainActivity.class), 0);
+
+                    nm = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+                    Notification noti = new Notification.Builder(getApplicationContext())
+                            .setSmallIcon(null)
+                            .setTicker(push)
+                            .setContentTitle("Push received")
+                            .setContentText(push)
+                            .setContentIntent(onNotiClick)
+                            .build();
+
+                    nm.notify(NOTIFICATION, noti);
+                }
+            });
+            server.start();
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
+        //Keep CPU awake
+        powerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Cirkit");
+        wakeLock.acquire();
+        //Keep wifi awake
+        WifiManager wm = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Cirkit");
+        wifiLock.acquire();
+        //Become foreground service
+        PendingIntent pi = PendingIntent.getActivity(this, 0,
+                new Intent(this, MainActivity.class), 0);
+        Notification cirkitNoti = new Notification.Builder(this)
+                .setSmallIcon(null)
+                .setTicker("Cirkit")
+                .setWhen(System.currentTimeMillis())
+                .setContentTitle("Cirkit")
+                .setContentText("Cirkit is running in the background")
+                .setContentIntent(pi)
+                .build();
+        startForeground(1, cirkitNoti);
+
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        stopForeground(true);
+        wakeLock.release();
+        wifiLock.release();
+        server.stop();
+        nm.cancel(NOTIFICATION);
+        Toast.makeText(this, "Cirkit service stopped...", Toast.LENGTH_SHORT).show();
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+}
