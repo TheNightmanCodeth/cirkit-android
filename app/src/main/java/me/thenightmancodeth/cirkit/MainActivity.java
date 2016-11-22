@@ -48,35 +48,31 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final EditText pushET = (EditText)findViewById(R.id.pushET);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-            }
-        });
-
-        final EditText pushET = (EditText)findViewById(R.id.pushET);
-        Button pushButton = (Button)findViewById(R.id.pushButton);
-        pushButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
                 String pushString = pushET.getText().toString();
-                Cirkit cirkit = new Cirkit();
-                Call<Push> call = cirkit.getSi().sendPush(new Push(pushString));
-                call.enqueue(new Callback<Push>() {
-                    @Override
-                    public void onResponse(Call<Push> call, Response<Push> response) {
-                        makeSnackBar("Push successful!");
-                        Log.i(TAG, "Response was: " +response);
-                    }
+                if (pushString.equals("")) {
+                    makeSnackBar("Push cannot be null!");
+                } else {
+                    Cirkit cirkit = new Cirkit();
+                    Call<Push> call = cirkit.getSi().sendPush(new Push(pushString));
+                    call.enqueue(new Callback<Push>() {
+                        @Override
+                        public void onResponse(Call<Push> call, Response<Push> response) {
+                            makeSnackBar("Push successful!");
+                            Log.i(TAG, "Response was: " + response);
+                        }
 
-                    @Override
-                    public void onFailure(Call<Push> call, Throwable t) {
-                        Log.d(TAG, "ERROR: " +t);
+                        @Override
+                        public void onFailure(Call<Push> call, Throwable t) {
+                            Log.d(TAG, "ERROR: " + t);
 
-                    }
-                });
+                        }
+                    });
+                }
             }
         });
         startCirkitAndRegisterTimer();
