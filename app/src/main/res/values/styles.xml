@@ -17,4 +17,8 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="dialog" parent="Theme.AppCompat.Dialog">
+        <item name="windowNoTitle">True</item>
+    </style>
+
 </resources>

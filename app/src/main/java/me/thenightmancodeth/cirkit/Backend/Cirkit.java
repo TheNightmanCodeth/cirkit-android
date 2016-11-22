@@ -18,6 +18,7 @@ public class Cirkit {
     private String API_BASE_URL = "http://10.0.0.35:6969/";
     private Retrofit retrofit;
     private ServerInterface si;
+    private String IP = "10.0.0.35";
 
     public Cirkit() {
         //Creates lenient gson client
@@ -45,6 +46,11 @@ public class Cirkit {
      */
     public void setServerIP(String ip) {
         this.API_BASE_URL = "http://" +ip +":6969/";
+        this.IP = ip;
+    }
+
+    public String getServerIP() {
+        return IP;
     }
 
     public ServerInterface getSi() {

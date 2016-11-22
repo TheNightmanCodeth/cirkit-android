@@ -3,15 +3,20 @@ package me.thenightmancodeth.cirkit;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,6 +41,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
+    private Cirkit cirkit = new Cirkit();
     private final String TAG = "MainActivity";
     private final Context ctx = MainActivity.this;
     public interface OnPushReceivedListener {
@@ -49,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        ifFirstLaunchShowServerAlert();
+
         final EditText pushET = (EditText)findViewById(R.id.pushET);
         final TextView addrTV = (TextView)findViewById(R.id.serverAddressTV);
 
@@ -58,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
 
-        addrTV.setText("Cirkit listening at: \nhttp://" +formIP +":6969/");
+        addrTV.setText("Cirkit is listening for pushes at: \nhttp://" +formIP +":6969/");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -68,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
                 if (pushString.equals("")) {
                     makeSnackBar("Push cannot be null!");
                 } else {
-                    Cirkit cirkit = new Cirkit();
                     Call<Push> call = cirkit.getSi().sendPush(new Push(pushString));
                     call.enqueue(new Callback<Push>() {
                         @Override
@@ -107,13 +114,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void startCirkitAndRegisterTimer() {
-        //Start cirkit service
-        Intent cirkitService = new Intent(MainActivity.this, CirkitService.class);
-        PendingIntent pendin = PendingIntent.getService(MainActivity.this, 0, cirkitService, 0);
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-                Calendar.getInstance().getTimeInMillis(), AlarmManager.INTERVAL_HALF_DAY, pendin);
-        makeSnackBar("Cirkit is running!");
+        if (!CirkitService.running) {
+            //Start cirkit service
+            Intent cirkitService = new Intent(MainActivity.this, CirkitService.class);
+            PendingIntent pendin = PendingIntent.getService(MainActivity.this, 0, cirkitService, 0);
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+                    Calendar.getInstance().getTimeInMillis(), AlarmManager.INTERVAL_HALF_DAY, pendin);
+            makeSnackBar("Cirkit is running!");
+        }
     }
 
     @Override
@@ -129,6 +138,34 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void ifFirstLaunchShowServerAlert() {
+        SharedPreferences prefs = getSharedPreferences("Cirkit", MODE_PRIVATE);
+        boolean firstLaunch = prefs.getBoolean("CirkitFirstLaunch", false);
+        if (!firstLaunch) {
+            Log.i(TAG, "firstLaunch");
+            final SharedPreferences.Editor edit = prefs.edit();
+            LayoutInflater inflater = getLayoutInflater();
+            final View dialogView = inflater.inflate(R.layout.first_launch_dialog, null);
+            AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.dialog))
+                    .setTitle("Cirkit Server")
+                    .setMessage("Welcome to Cirkit! Start the server on your computer, and enter the IP you see here:")
+                    .setView(dialogView)
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            EditText ipET = (EditText)dialogView.findViewById(R.id.first_launch_server_et);
+                            String ip = ipET.getText().toString();
+                            cirkit.setServerIP(ip);
+                            makeSnackBar("Server IP set to: " +cirkit.getServerIP());
+                            edit.putBoolean("CirkitFirstLaunch", true);
+                            edit.apply();
+                        }
+                    });
+            dialogbuilder.create().show();
+        }
     }
 
     private void makeSnackBar(String content) {

@@ -38,6 +38,7 @@ public class CirkitService extends Service {
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
     WifiManager.WifiLock wifiLock;
+    public static boolean running;
     private final int NOTIFICATION = 4200;
     private int NEW_PUSH_NOT = 6960;
     private final String PUSHES_GROUP = "group_pushes";
@@ -101,7 +102,7 @@ public class CirkitService extends Service {
         //Make notification persistent
         cirkitNoti.flags|=Notification.FLAG_NO_CLEAR;
         startForeground(NOTIFICATION, cirkitNoti);
-
+        running = true;
         return START_STICKY;
     }
 
@@ -112,6 +113,7 @@ public class CirkitService extends Service {
         server.stop();
         //Close pers. notification
         nm.cancel(NOTIFICATION);
+        running = false;
         Toast.makeText(this, "Cirkit service stopped...", Toast.LENGTH_SHORT).show();
     }
 
