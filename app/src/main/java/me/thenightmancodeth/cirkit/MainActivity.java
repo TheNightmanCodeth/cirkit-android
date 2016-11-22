@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -49,6 +50,16 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         final EditText pushET = (EditText)findViewById(R.id.pushET);
+        final TextView addrTV = (TextView)findViewById(R.id.serverAddressTV);
+
+        WifiManager wifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
+        int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
+        final String formIP = String.format(Locale.US, "%d.%d.%d.%d", (ipAddress & 0xff),
+                (ipAddress >> 8 & 0xff),
+                (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
+
+        addrTV.setText("Cirkit listening at: \nhttp://" +formIP +":6969/");
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,13 +92,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        WifiManager wifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
-        int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
-        final String formIP = String.format(Locale.US, "%d.%d.%d.%d", (ipAddress & 0xff),
-                (ipAddress >> 8 & 0xff),
-                (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-        makeSnackBar("http://" +formIP +":6969");
     }
 
     @Override

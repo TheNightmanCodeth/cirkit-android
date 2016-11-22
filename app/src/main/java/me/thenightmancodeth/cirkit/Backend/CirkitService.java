@@ -86,14 +86,6 @@ public class CirkitService extends Service {
         } catch(IOException ioe) {
             ioe.printStackTrace();
         }
-        //Register CPU wakelock
-        powerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Cirkit");
-        wakeLock.acquire();
-        //Register Wifi wakelock
-        WifiManager wm = (WifiManager)getSystemService(Context.WIFI_SERVICE);
-        wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Cirkit");
-        wifiLock.acquire();
         //Become foreground service
         PendingIntent pi = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
