@@ -108,9 +108,6 @@ public class CirkitService extends Service {
     @Override
     public void onDestroy() {
         stopForeground(true);
-        //Release wakelocks
-        wakeLock.release();
-        wifiLock.release();
         //Stop server
         server.stop();
         //Close pers. notification
