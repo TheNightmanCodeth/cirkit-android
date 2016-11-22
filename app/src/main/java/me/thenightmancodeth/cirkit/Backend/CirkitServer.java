@@ -39,7 +39,7 @@ public class CirkitServer extends NanoHTTPD {
         //Gets HTTP request method
         Method method = session.getMethod();
         //If the http request is a POST request,
-        if (POST.equals(method)) {
+        if (method.POST.equals(method)) {
             try {
                 //Parse JSON data from post body
                 session.parseBody(jsonBody);
@@ -58,7 +58,7 @@ public class CirkitServer extends NanoHTTPD {
         //Runs listener from Constructor passing push value
         listener.onPushRec(extractVal(tem));
         //Returns response to client node
-        return new Response(Response.Status.OK, MIME_PLAINTEXT, "Push: " +push +" received");
+        return new Response(Response.Status.OK, MIME_PLAINTEXT, "Push: " +extractVal(tem) +" received");
     }
 
     /**

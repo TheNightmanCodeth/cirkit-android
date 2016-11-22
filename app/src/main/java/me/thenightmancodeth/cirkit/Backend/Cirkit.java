@@ -43,7 +43,7 @@ public class Cirkit {
      * Accepts IP address of server and sets BASE_URL
      * @param ip - Server IP address
      */
-    public setServerIP(String ip) {
+    public void setServerIP(String ip) {
         this.API_BASE_URL = "http://" +ip +":6969/";
     }
 
