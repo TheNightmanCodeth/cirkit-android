@@ -1,7 +1,6 @@
-package me.thenightmancodeth.cirkit;
+package me.thenightmancodeth.cirkit.Backend;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -11,7 +10,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
@@ -20,6 +18,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+
+import me.thenightmancodeth.cirkit.MainActivity;
+import me.thenightmancodeth.cirkit.R;
 
 /***************************************
  * Created by TheNightman on 11/21/16. *
@@ -56,7 +57,8 @@ public class CirkitService extends Service {
                             .getActivity(getApplicationContext(), 0,
                                     new Intent(getApplicationContext(), MainActivity.class), 0);
                     //Get notification sound
-                    Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    Uri alarmSound = RingtoneManager
+                            .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     //Create notification
                     nm = NotificationManagerCompat.from(getApplicationContext());
                     Notification noti = new Notification.Builder(getApplicationContext())

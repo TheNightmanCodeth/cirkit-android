@@ -1,4 +1,4 @@
-package me.thenightmancodeth.cirkit;
+package me.thenightmancodeth.cirkit.Backend;
 
 import android.util.Log;
 import android.widget.Toast;
@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fi.iki.elonen.NanoHTTPD;
+import me.thenightmancodeth.cirkit.MainActivity;
 
 /***************************************
  * Created by TheNightman on 11/21/16. *
@@ -30,7 +31,8 @@ public class CirkitServer extends NanoHTTPD {
             try {
                 session.parseBody(jsonBody);
             } catch (IOException ioe) {
-                return new Response(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
+                return new Response(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT,
+                        "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
             } catch (ResponseException re) {
                 return new Response(re.getStatus(), MIME_PLAINTEXT, re.getMessage());
             }
