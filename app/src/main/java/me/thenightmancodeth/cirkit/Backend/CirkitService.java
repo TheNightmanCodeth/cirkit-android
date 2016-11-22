@@ -24,6 +24,11 @@ import me.thenightmancodeth.cirkit.R;
 
 /***************************************
  * Created by TheNightman on 11/21/16. *
+ *                                     *
+ * Service that runs CirkitServer in   *
+ * the background. Needs to be         *
+ * launched every ~12 hours or else    *
+ * android will kill it.               *
  ***************************************/
 
 public class CirkitService extends Service {
@@ -52,7 +57,7 @@ public class CirkitService extends Service {
                 @Override
                 public void onPushRec(String push) {
                     //Intent to launch when notification is clicked
-                    //TODO: Add intent flag containing push to add to local pushes db
+                    //TODO: add push value to intent flags
                     final PendingIntent onNotiClick = PendingIntent
                             .getActivity(getApplicationContext(), 0,
                                     new Intent(getApplicationContext(), MainActivity.class), 0);
@@ -74,24 +79,25 @@ public class CirkitService extends Service {
                             .build();
                     //Show notification
                     nm.notify(NEW_PUSH_NOT++, noti);
-                    Log.e("PUSH RECEIVED", push);
                 }
             });
+            //Starts server
             server.start();
         } catch(IOException ioe) {
             ioe.printStackTrace();
         }
-        //Keep CPU awake
+        //Register CPU wakelock
         powerManager = (PowerManager)getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Cirkit");
         wakeLock.acquire();
-        //Keep wifi awake
+        //Register Wifi wakelock
         WifiManager wm = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         wifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Cirkit");
         wifiLock.acquire();
         //Become foreground service
         PendingIntent pi = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
+        //Set persistent notification so service doesn't close
         Notification cirkitNoti = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.ic_noti)
                 .setTicker("Cirkit")
@@ -100,6 +106,7 @@ public class CirkitService extends Service {
                 .setContentText("Cirkit is running in the background")
                 .setContentIntent(pi)
                 .build();
+        //Make notification persistent
         cirkitNoti.flags|=Notification.FLAG_NO_CLEAR;
         startForeground(NOTIFICATION, cirkitNoti);
 
@@ -109,9 +116,12 @@ public class CirkitService extends Service {
     @Override
     public void onDestroy() {
         stopForeground(true);
+        //Release wakelocks
         wakeLock.release();
         wifiLock.release();
+        //Stop server
         server.stop();
+        //Close pers. notification
         nm.cancel(NOTIFICATION);
         Toast.makeText(this, "Cirkit service stopped...", Toast.LENGTH_SHORT).show();
     }

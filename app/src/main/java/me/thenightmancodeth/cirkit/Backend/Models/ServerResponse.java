@@ -1,8 +1,10 @@
 package me.thenightmancodeth.cirkit.Backend.Models;
 
-/**
- * Created by andrewdiragi on 11/22/16.
- */
+/***************************************
+ * Created by TheNightman on 11/22/16. *
+ *                                     *
+ * RF model for parsing server res     *
+ ***************************************/
 
 public class ServerResponse {
     String response;

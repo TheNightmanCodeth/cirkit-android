@@ -1,8 +1,10 @@
 package me.thenightmancodeth.cirkit.Backend.Models;
 
-/**
- * Created by andrewdiragi on 11/22/16.
- */
+/***************************************
+ * Created by TheNightman on 11/22/16. *
+ *                                     *
+ * Retrofit model for holding push     *
+ ***************************************/
 
 public class Push {
     String msg;
