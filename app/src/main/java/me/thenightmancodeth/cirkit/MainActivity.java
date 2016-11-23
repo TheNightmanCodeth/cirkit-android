@@ -41,7 +41,8 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
-    private Cirkit cirkit = new Cirkit();
+    private Cirkit cirkit;
+    private String nodeIp;
     private final String TAG = "MainActivity";
     private final Context ctx = MainActivity.this;
     public interface OnPushReceivedListener {
@@ -52,8 +53,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         ifFirstLaunchShowServerAlert();
 
@@ -66,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
                 (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
 
+        this.nodeIp = formIP;
+
         addrTV.setText("Cirkit is listening for pushes at: \nhttp://" +formIP +":6969/");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -76,18 +77,15 @@ public class MainActivity extends AppCompatActivity {
                 if (pushString.equals("")) {
                     makeSnackBar("Push cannot be null!");
                 } else {
-                    Call<Push> call = cirkit.getSi().sendPush(new Push(pushString));
-                    call.enqueue(new Callback<Push>() {
+                    cirkit.sendPush(pushString, cirkit.getDeviceName(), new Cirkit.ServerResponseListener() {
                         @Override
-                        public void onResponse(Call<Push> call, Response<Push> response) {
-                            makeSnackBar("Push successful!");
-                            Log.i(TAG, "Response was: " + response);
+                        public void onResponse(Response<ServerResponse> response) {
+                            Log.d(TAG, response.body().getResponse());
                         }
 
                         @Override
-                        public void onFailure(Call<Push> call, Throwable t) {
-                            Log.d(TAG, "ERROR: " + t);
-
+                        public void onError(Throwable t) {
+                            t.printStackTrace();
                         }
                     });
                 }
@@ -118,11 +116,12 @@ public class MainActivity extends AppCompatActivity {
         if (!CirkitService.running) {
             //Start cirkit service
             Intent cirkitService = new Intent(MainActivity.this, CirkitService.class);
-            PendingIntent pendin = PendingIntent.getService(MainActivity.this, 0, cirkitService, 0);
+            PendingIntent pendin = PendingIntent
+                    .getService(MainActivity.this, 0, cirkitService, 0);
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
-                    Calendar.getInstance().getTimeInMillis(), AlarmManager.INTERVAL_HALF_DAY, pendin);
-            makeSnackBar("Cirkit is running!");
+                    Calendar.getInstance().getTimeInMillis(), AlarmManager.INTERVAL_HALF_DAY,
+                    pendin);
         }
     }
 
@@ -149,20 +148,34 @@ public class MainActivity extends AppCompatActivity {
             final SharedPreferences.Editor edit = prefs.edit();
             LayoutInflater inflater = getLayoutInflater();
             final View dialogView = inflater.inflate(R.layout.first_launch_dialog, null);
-            AlertDialog.Builder dialogbuilder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.dialog))
+            AlertDialog.Builder dialogbuilder =
+                    new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.dialog))
                     .setTitle("Cirkit Server")
-                    .setMessage("Welcome to Cirkit! Start the server on your computer, and enter the IP you see here:")
+                    .setMessage("Welcome to Cirkit! Start the server on your computer, " +
+                            "and enter the IP you see here:")
                     .setView(dialogView)
                     .setCancelable(false)
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            EditText ipET = (EditText)dialogView.findViewById(R.id.first_launch_server_et);
+                            EditText ipET = (EditText)dialogView.
+                                    findViewById(R.id.first_launch_server_et);
                             String ip = ipET.getText().toString();
-                            cirkit.setServerIP(ip);
+                            cirkit = new Cirkit(ip);
                             makeSnackBar("Server IP set to: " +cirkit.getServerIP());
                             edit.putBoolean("CirkitFirstLaunch", true);
                             edit.apply();
+                            cirkit.registerDevice(nodeIp, "GS6", new Cirkit.ServerResponseListener() {
+                                @Override
+                                public void onResponse(Response<ServerResponse> response) {
+                                    Log.d(TAG, response.body().getResponse());
+                                }
+
+                                @Override
+                                public void onError(Throwable t) {
+                                    t.printStackTrace();
+                                }
+                            });
                         }
                     });
             dialogbuilder.create().show();

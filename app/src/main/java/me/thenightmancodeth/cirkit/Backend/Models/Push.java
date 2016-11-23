@@ -7,17 +7,27 @@ package me.thenightmancodeth.cirkit.Backend.Models;
  ***************************************/
 
 public class Push {
-    String msg;
+    String push;
+    String device;
 
-    public Push(String p) {
-        this.msg = p;
+    public Push(String p, String d) {
+        this.push = p;
+        this.device = d;
     }
 
     public String getPush() {
-        return msg;
+        return push;
     }
 
     public void setPush(String push) {
-        this.msg = push;
+        this.push = push;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
     }
 }

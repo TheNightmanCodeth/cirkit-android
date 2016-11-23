@@ -1,9 +1,9 @@
 package me.thenightmancodeth.cirkit.Backend.Interfaces;
 
+import me.thenightmancodeth.cirkit.Backend.Models.NodeDevice;
 import me.thenightmancodeth.cirkit.Backend.Models.Push;
 import me.thenightmancodeth.cirkit.Backend.Models.ServerResponse;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
 
@@ -16,5 +16,8 @@ import retrofit2.http.POST;
 
 public interface ServerInterface {
     @POST("cirkit")
-    Call<Push> sendPush(@Body Push push);
+    Call<ServerResponse> sendPush(@Body Push push);
+
+    @POST("register")
+    Call<ServerResponse> registerDevice(@Body NodeDevice device);
 }
