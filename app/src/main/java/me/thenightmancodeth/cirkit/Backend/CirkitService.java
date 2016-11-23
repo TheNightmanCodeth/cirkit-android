@@ -13,6 +13,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -34,13 +35,16 @@ import me.thenightmancodeth.cirkit.R;
 public class CirkitService extends Service {
     CirkitServer server;
     private final IBinder binder = new LocalBinder();
-    private NotificationManagerCompat nm;
+    private static NotificationManagerCompat nm;
+    private final Context ctx = CirkitService.this;
+    private static NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
     PowerManager powerManager;
     PowerManager.WakeLock wakeLock;
     WifiManager.WifiLock wifiLock;
     public static boolean running;
+    public static int pendingPushes = 0;
     private final int NOTIFICATION = 4200;
-    private int NEW_PUSH_NOT = 6960;
+    private static int NEW_PUSH_NOT = 6960;
     private final String PUSHES_GROUP = "group_pushes";
 
     public class LocalBinder extends Binder {
@@ -50,36 +54,39 @@ public class CirkitService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, final int startId) {
         Log.i("Cirkit_Service", "Received start id " +startId +": " +intent);
+        nm = NotificationManagerCompat.from(ctx);
         //Start cirkit server
         try {
             server = new CirkitServer(new MainActivity.OnPushReceivedListener() {
                 @Override
                 public void onPushRec(String push) {
+                    pendingPushes++;
                     //Intent to launch when notification is clicked
                     //TODO: add push value to intent flags
                     final PendingIntent onNotiClick = PendingIntent
-                            .getActivity(getApplicationContext(), 0,
-                                    new Intent(getApplicationContext(), MainActivity.class), 0);
+                            .getActivity(ctx, 0,
+                                    new Intent(ctx, MainActivity.class), 0);
                     //Get notification sound
                     Uri alarmSound = RingtoneManager
                             .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    style.setBigContentTitle(pendingPushes +" new pushes");
+                    style.addLine(push);
+                    style.setSummaryText("Click here to view");
                     //Create notification
-                    nm = NotificationManagerCompat.from(getApplicationContext());
-                    Notification noti = new Notification.Builder(getApplicationContext())
+
+                    Notification noti = new NotificationCompat.Builder(ctx)
                             .setSmallIcon(R.drawable.ic_noti)
-                            .setTicker(push)
-                            .setContentTitle("Push received")
-                            .setContentText(push)
-                            .setGroup(PUSHES_GROUP)
+                            .setStyle(style)
+                            .setGroupSummary(true)
+                            .setNumber(pendingPushes)
                             .setSound(alarmSound)
                             .setLights(Color.CYAN, 3000, 3000)
                             .setVibrate(new long[] {1000,1000})
                             .setContentIntent(onNotiClick)
                             .build();
-                    //Show notification
-                    nm.notify(NEW_PUSH_NOT++, noti);
+                    nm.notify(NEW_PUSH_NOT, noti);
                 }
             });
             //Starts server
@@ -104,6 +111,14 @@ public class CirkitService extends Service {
         startForeground(NOTIFICATION, cirkitNoti);
         running = true;
         return START_STICKY;
+    }
+
+    public static void resetPendingPushes() {
+        pendingPushes = 0;
+        style = new NotificationCompat.InboxStyle();
+        if (nm != null) {
+            nm.cancel(NEW_PUSH_NOT);
+        }
     }
 
     @Override
