@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Cirkit.iml" filepath="$PROJECT_DIR$/Cirkit.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/cirkit_android.iml" filepath="$PROJECT_DIR$/cirkit_android.iml" />
     </modules>
   </component>
 </project>

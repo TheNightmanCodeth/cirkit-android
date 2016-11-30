@@ -8,10 +8,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -30,6 +28,9 @@ import me.thenightmancodeth.cirkit.R;
  * the background. Needs to be         *
  * launched every ~12 hours or else    *
  * android will kill it.               *
+ * (Samsung phones seem to kill it     *
+ *   no matter what. For now just      *
+ *   start the app when it stops)      *
  ***************************************/
 
 public class CirkitService extends Service {
@@ -38,14 +39,10 @@ public class CirkitService extends Service {
     private static NotificationManagerCompat nm;
     private final Context ctx = CirkitService.this;
     private static NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
-    PowerManager powerManager;
-    PowerManager.WakeLock wakeLock;
-    WifiManager.WifiLock wifiLock;
     public static boolean running;
     public static int pendingPushes = 0;
     private final int NOTIFICATION = 4200;
     private static int NEW_PUSH_NOT = 6960;
-    private final String PUSHES_GROUP = "group_pushes";
 
     public class LocalBinder extends Binder {
         CirkitService getService() {
@@ -71,9 +68,9 @@ public class CirkitService extends Service {
                     //Get notification sound
                     Uri alarmSound = RingtoneManager
                             .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    style.setBigContentTitle(pendingPushes +" new pushes");
+                    style.setBigContentTitle(getString(R.string.app_name));
                     style.addLine(push);
-                    style.setSummaryText("Click here to view");
+                    style.setSummaryText(pendingPushes +" new pushes");
                     //Create notification
 
                     Notification noti = new NotificationCompat.Builder(ctx)
@@ -100,10 +97,10 @@ public class CirkitService extends Service {
         //Set persistent notification so service doesn't close
         Notification cirkitNoti = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.ic_noti)
-                .setTicker("Cirkit")
+                .setTicker(getString(R.string.app_name))
                 .setWhen(System.currentTimeMillis())
-                .setContentTitle("Cirkit")
-                .setContentText("Cirkit is running in the background")
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText(getString(R.string.persist_noti))
                 .setContentIntent(pi)
                 .build();
         //Make notification persistent

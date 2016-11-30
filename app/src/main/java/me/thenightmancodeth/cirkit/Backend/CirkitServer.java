@@ -77,13 +77,14 @@ public class CirkitServer extends NanoHTTPD {
     public String extractVal(String dataRaw) {
         //{"KEY","DATA DATA"}
         String re1=".*?";	// Non-greedy match on filler
-        String re2="\".*?\"";	// Uninteresting: string
+        String re2="(\".*?\")";	// Uninteresting: string
         String re3=".*?";	// Non-greedy match on filler
         String re4="(\".*?\")";	// Double Quote String 1
         Pattern patt = Pattern.compile(re1+re2+re3+re4,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         Matcher matc = patt.matcher(dataRaw);
         if (matc.find()) {
-            return matc.group(1);
+            //Group 1 should be the key
+            return matc.group(2);
         }
         return null;
     }
