@@ -171,23 +171,28 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     EditText ipET = (EditText)dialogView.
                                             findViewById(R.id.first_launch_server_et);
-                                    String ip = ipET.getText().toString();
-                                    cirkit = new Cirkit(ip);
-                                    makeSnackBar("Server IP set to: " +cirkit.getServerIP());
-                                    edit.putBoolean("CirkitFirstLaunch", true);
-                                    edit.apply();
-                                    cirkit.registerDevice(nodeIp, "GS6",
-                                            new Cirkit.ServerResponseListener() {
-                                                @Override
-                                                public void onResponse(Response<ServerResponse> response) {
-                                                    Log.d(TAG, response.body().getResponse());
-                                                }
 
-                                                @Override
-                                                public void onError(Throwable t) {
-                                                    t.printStackTrace();
-                                                }
-                                            });
+                                    if (!ipET.getText().toString().isEmpty()) {
+                                        String ip = ipET.getText().toString();
+                                        cirkit = new Cirkit(ip);
+                                        makeSnackBar("Server IP set to: " + cirkit.getServerIP());
+                                        edit.putBoolean("CirkitFirstLaunch", true);
+                                        edit.apply();
+                                        cirkit.registerDevice(nodeIp, "GS6",
+                                                new Cirkit.ServerResponseListener() {
+                                                    @Override
+                                                    public void onResponse(Response<ServerResponse> response) {
+                                                        Log.d(TAG, response.body().getResponse());
+                                                    }
+
+                                                    @Override
+                                                    public void onError(Throwable t) {
+                                                        t.printStackTrace();
+                                                    }
+                                                });
+                                    } else {
+                                        makeSnackBar("IP can't be blank!");
+                                    }
                                 }
                             });
             dialogbuilder.create().show();
