@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fi.iki.elonen.NanoHTTPD;
+import me.thenightmancodeth.cirkit.backend.models.Push;
 import me.thenightmancodeth.cirkit.views.MainActivity;
 
 /***************************************
@@ -57,12 +58,13 @@ public class CirkitServer extends NanoHTTPD {
         String tem = "";
         for (Map.Entry<String, String> k: session.getParms().entrySet()) {
             tem = k.getKey();
+            Log.e(TAG, tem);
         }
         //Runs listener from Constructor passing push value
-        listener.onPushRec(extractVal(tem));
+        listener.onPushRec(new Push(extractVal(tem, "msg"), remoteIP));
         //Returns response to client node
         return new Response(Response.Status.OK, MIME_PLAINTEXT,
-                "Push: " +extractVal(tem) +" received");
+                "Push: " +extractVal(tem, "msg") +" received from: " +extractVal(tem, "sender"));
     }
 
     /**
@@ -78,18 +80,20 @@ public class CirkitServer extends NanoHTTPD {
      * @param dataRaw - Raw JSON string from post body
      * @return - Value from json pair
      */
-    public String extractVal(String dataRaw) {
-        //{"KEY","DATA DATA"}
+    public String extractVal(String dataRaw, String key) {
+        //{"msg":"DATA DATA", "from":"289.35.22.252"}
         String re1=".*?";	// Non-greedy match on filler
-        String re2="(\".*?\")";	// Uninteresting: string
+        String re2="\"(.*?)\"";	// Uninteresting: string
         String re3=".*?";	// Non-greedy match on filler
-        String re4="(\".*?\")";	// Double Quote String 1
+        String re4="\"(.*?)\"";	// Double Quote String 1
         Pattern patt = Pattern.compile(re1+re2+re3+re4,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
         Matcher matc = patt.matcher(dataRaw);
-        if (matc.find()) {
-            //Group 1 should be the key
-            return matc.group(2);
+        while (matc.find()) {
+            //Group 1 should be the key (msg)
+            Log.i(TAG, matc.groupCount() +"");
+            if (matc.group(1).equals(key)) return matc.group(2);
         }
+
         return null;
     }
 }

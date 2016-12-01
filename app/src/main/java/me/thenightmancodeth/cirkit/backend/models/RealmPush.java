@@ -8,7 +8,6 @@ import io.realm.annotations.PrimaryKey;
  */
 
 public class RealmPush extends RealmObject {
-    @PrimaryKey
     private int id;
     private String msg;
     private String sender;

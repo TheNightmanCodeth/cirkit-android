@@ -18,6 +18,9 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
+import io.realm.Realm;
+import me.thenightmancodeth.cirkit.backend.models.Push;
+import me.thenightmancodeth.cirkit.backend.models.RealmPush;
 import me.thenightmancodeth.cirkit.views.MainActivity;
 import me.thenightmancodeth.cirkit.R;
 
@@ -58,7 +61,7 @@ public class CirkitService extends Service {
         try {
             server = new CirkitServer(new MainActivity.OnPushReceivedListener() {
                 @Override
-                public void onPushRec(String push) {
+                public void onPushRec(Push push) {
                     pendingPushes++;
                     //Intent to launch when notification is clicked
                     //TODO: add push value to intent flags
@@ -69,7 +72,7 @@ public class CirkitService extends Service {
                     Uri alarmSound = RingtoneManager
                             .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     style.setBigContentTitle(getString(R.string.app_name));
-                    style.addLine(push);
+                    style.addLine(push.getPush());
                     style.setSummaryText(pendingPushes +" new pushes");
                     //Create notification
 
@@ -84,6 +87,13 @@ public class CirkitService extends Service {
                             .setContentIntent(onNotiClick)
                             .build();
                     nm.notify(NEW_PUSH_NOT, noti);
+
+                    Realm realm = Realm.getDefaultInstance();
+                    realm.beginTransaction();
+                    RealmPush toRealm = realm.createObject(RealmPush.class);
+                    toRealm.setMsg(push.getPush());
+                    toRealm.setSender(push.getDevice());
+                    realm.commitTransaction();
                 }
             });
             //Starts server

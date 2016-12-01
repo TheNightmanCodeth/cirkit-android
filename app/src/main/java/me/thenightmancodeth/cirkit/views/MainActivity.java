@@ -3,6 +3,8 @@ package me.thenightmancodeth.cirkit.views;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,9 +13,12 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,9 +30,14 @@ import android.widget.TextView;
 import java.util.Calendar;
 import java.util.Locale;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
 import me.thenightmancodeth.cirkit.R;
 import me.thenightmancodeth.cirkit.backend.controllers.Cirkit;
 import me.thenightmancodeth.cirkit.backend.controllers.CirkitService;
+import me.thenightmancodeth.cirkit.backend.controllers.RealmRecycler;
+import me.thenightmancodeth.cirkit.backend.models.Push;
+import me.thenightmancodeth.cirkit.backend.models.RealmPush;
 import me.thenightmancodeth.cirkit.backend.models.ServerResponse;
 import retrofit2.Response;
 
@@ -38,9 +48,11 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
     private Cirkit cirkit;
     private String nodeIp;
+    private RecyclerView recyclerView;
     private final String TAG = "MainActivity";
+    private Realm realm;
     public interface OnPushReceivedListener {
-        void onPushRec(String push);
+        void onPushRec(Push push);
     }
 
     @Override
@@ -66,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         final EditText pushET = (EditText)findViewById(R.id.pushET);
-        final TextView addrTV = (TextView)findViewById(R.id.serverAddressTV);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +100,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        recyclerView = (RecyclerView)findViewById(R.id.push_rec);
+        setupRealm();
+        initRecycler();
         //Show the server alert if it's first start
         showServerAlert(false);
         //Get and display current device IP
@@ -98,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
                 (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
         this.nodeIp = formIP;
-        addrTV.setText("Cirkit is listening for pushes at: \nhttp://" +formIP +":6969/");
         startCirkitAndRegisterTimer();
     }
 
@@ -205,5 +218,46 @@ public class MainActivity extends AppCompatActivity {
 
     private void makeSnackBar(String content) {
         Snackbar.make(findViewById(android.R.id.content), content, Snackbar.LENGTH_LONG).show();
+    }
+
+    public void itemClick(RealmPush data) {
+        //TODO: show alert with options
+        //Copy push to clipboard
+        ClipboardManager cb = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(getString(R.string.app_name), data.getMsg());
+        cb.setPrimaryClip(clip);
+        makeSnackBar("Copied push to clipboard!");
+    }
+
+    private void initRecycler() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        final RealmRecycler adapter = new RealmRecycler(this, realm.where(RealmPush.class).findAllAsync());
+        recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(true);
+        final SwipeRefreshLayout refreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipeRefreshLayout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshLayout.setRefreshing(true);
+                adapter.notifyDataSetChanged();
+                recyclerView.setAdapter(adapter);
+                refreshLayout.setRefreshing(false);
+                RealmResults<RealmPush> pushes = realm.where(RealmPush.class).findAll();
+                for (RealmPush r: pushes) {
+                    Log.e(TAG, r.getMsg());
+                }
+            }
+        });
+    }
+
+    private void setupRealm() {
+        Realm.init(getApplicationContext());
+        realm = Realm.getDefaultInstance();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        realm.close();
     }
 }
