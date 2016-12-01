@@ -1,4 +1,4 @@
-package me.thenightmancodeth.cirkit.Backend.Models;
+package me.thenightmancodeth.cirkit.backend.models;
 
 /***************************************
  * Created by TheNightman on 11/22/16. *

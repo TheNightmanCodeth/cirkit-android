@@ -1,4 +1,4 @@
-package me.thenightmancodeth.cirkit;
+package me.thenightmancodeth.cirkit.views;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -24,9 +24,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import java.util.Calendar;
 import java.util.Locale;
-import me.thenightmancodeth.cirkit.Backend.Cirkit;
-import me.thenightmancodeth.cirkit.Backend.CirkitService;
-import me.thenightmancodeth.cirkit.Backend.Models.ServerResponse;
+
+import me.thenightmancodeth.cirkit.R;
+import me.thenightmancodeth.cirkit.backend.controllers.Cirkit;
+import me.thenightmancodeth.cirkit.backend.controllers.CirkitService;
+import me.thenightmancodeth.cirkit.backend.models.ServerResponse;
 import retrofit2.Response;
 
 /***************************************
@@ -125,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             PendingIntent pendin = PendingIntent
                     .getService(MainActivity.this, 0, cirkitService, 0);
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
                     Calendar.getInstance().getTimeInMillis(), AlarmManager.INTERVAL_HALF_DAY,
                     pendin);
         }
@@ -142,6 +144,8 @@ public class MainActivity extends AppCompatActivity {
             //Show server alert now
             showServerAlert(true);
             return true;
+        } else if (id == R.id.action_start_server) {
+            startCirkitAndRegisterTimer();
         }
         return super.onOptionsItemSelected(item);
     }

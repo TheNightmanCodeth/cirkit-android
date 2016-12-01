@@ -1,13 +1,11 @@
-package me.thenightmancodeth.cirkit.Backend;
-
-import android.util.Log;
+package me.thenightmancodeth.cirkit.backend.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.thenightmancodeth.cirkit.Backend.Interfaces.ServerInterface;
-import me.thenightmancodeth.cirkit.Backend.Models.NodeDevice;
-import me.thenightmancodeth.cirkit.Backend.Models.Push;
-import me.thenightmancodeth.cirkit.Backend.Models.ServerResponse;
+import me.thenightmancodeth.cirkit.backend.controllers.interfaces.ServerInterface;
+import me.thenightmancodeth.cirkit.backend.models.NodeDevice;
+import me.thenightmancodeth.cirkit.backend.models.Push;
+import me.thenightmancodeth.cirkit.backend.models.ServerResponse;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;

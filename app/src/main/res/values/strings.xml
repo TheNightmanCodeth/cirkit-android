@@ -2,5 +2,6 @@
     <string name="app_name">Cirkit</string>
     <string name="action_settings">Settings</string>
     <string name="action_server_ip">Server IP</string>
+    <string name="action_server_start">Start cirkit</string>
     <string name="persist_noti">Cirkit is running in the background</string>
 </resources>

@@ -1,4 +1,4 @@
-package me.thenightmancodeth.cirkit.Backend;
+package me.thenightmancodeth.cirkit.backend.controllers;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -18,7 +18,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-import me.thenightmancodeth.cirkit.MainActivity;
+import me.thenightmancodeth.cirkit.views.MainActivity;
 import me.thenightmancodeth.cirkit.R;
 
 /***************************************

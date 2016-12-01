@@ -1,8 +1,8 @@
-package me.thenightmancodeth.cirkit.Backend.Interfaces;
+package me.thenightmancodeth.cirkit.backend.controllers.interfaces;
 
-import me.thenightmancodeth.cirkit.Backend.Models.NodeDevice;
-import me.thenightmancodeth.cirkit.Backend.Models.Push;
-import me.thenightmancodeth.cirkit.Backend.Models.ServerResponse;
+import me.thenightmancodeth.cirkit.backend.models.NodeDevice;
+import me.thenightmancodeth.cirkit.backend.models.Push;
+import me.thenightmancodeth.cirkit.backend.models.ServerResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;

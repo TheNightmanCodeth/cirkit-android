@@ -1,7 +1,6 @@
-package me.thenightmancodeth.cirkit.Backend;
+package me.thenightmancodeth.cirkit.backend.controllers;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fi.iki.elonen.NanoHTTPD;
-import me.thenightmancodeth.cirkit.MainActivity;
+import me.thenightmancodeth.cirkit.views.MainActivity;
 
 /***************************************
  * Created by TheNightman on 11/21/16. *
@@ -21,6 +20,7 @@ import me.thenightmancodeth.cirkit.MainActivity;
  ***************************************/
 
 public class CirkitServer extends NanoHTTPD {
+    private final String TAG = "SERVER";
     private MainActivity.OnPushReceivedListener listener;
     public CirkitServer(MainActivity.OnPushReceivedListener l) throws IOException {
         //Sets port to listen on
@@ -34,6 +34,9 @@ public class CirkitServer extends NanoHTTPD {
      */
     @Override
     public Response serve(IHTTPSession session) {
+        String remoteIP = session.getHeaders().get("remote-addr");
+        Log.e(TAG, "Received push from IP: " +remoteIP);
+        //TODO: check if device is already registered, if not register it to realm DB
         //Holds json object data
         Map<String, String> jsonBody = new HashMap<String, String>();
         //Gets HTTP request method
@@ -58,7 +61,8 @@ public class CirkitServer extends NanoHTTPD {
         //Runs listener from Constructor passing push value
         listener.onPushRec(extractVal(tem));
         //Returns response to client node
-        return new Response(Response.Status.OK, MIME_PLAINTEXT, "Push: " +extractVal(tem) +" received");
+        return new Response(Response.Status.OK, MIME_PLAINTEXT,
+                "Push: " +extractVal(tem) +" received");
     }
 
     /**
