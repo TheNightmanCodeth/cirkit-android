@@ -188,14 +188,17 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     EditText ipET = (EditText)dialogView.
                                             findViewById(R.id.first_launch_server_et);
+                                    EditText nameET = (EditText)dialogView.
+                                            findViewById(R.id.first_launch_device_name);
 
-                                    if (!ipET.getText().toString().isEmpty()) {
+                                    if (!ipET.getText().toString().isEmpty() && !nameET.getText().toString().isEmpty()) {
                                         String ip = ipET.getText().toString();
+                                        String name = nameET.getText().toString();
                                         cirkit = new Cirkit(ip);
                                         makeSnackBar("Server IP set to: " + cirkit.getServerIP());
                                         edit.putBoolean("CirkitFirstLaunch", true);
                                         edit.apply();
-                                        cirkit.registerDevice(nodeIp, "GS6",
+                                        cirkit.registerDevice(nodeIp, name,
                                                 new Cirkit.ServerResponseListener() {
                                                     @Override
                                                     public void onResponse(Response<ServerResponse> response) {

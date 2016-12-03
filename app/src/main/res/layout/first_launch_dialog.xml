@@ -10,4 +10,12 @@
         android:textColor="#cfd8dc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+    <EditText
+        android:id="@+id/first_launch_device_name"
+        android:layout_margin="20dp"
+        android:hint="Device name..."
+        android:textColorHint="#cfd8dc"
+        android:textColor="#cfd8dc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </LinearLayout>
