@@ -26,17 +26,18 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.TextView;
 import java.util.Calendar;
 import java.util.Locale;
 
 import io.realm.Realm;
+import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import me.thenightmancodeth.cirkit.R;
 import me.thenightmancodeth.cirkit.backend.controllers.Cirkit;
 import me.thenightmancodeth.cirkit.backend.controllers.CirkitService;
 import me.thenightmancodeth.cirkit.backend.controllers.RealmRecycler;
 import me.thenightmancodeth.cirkit.backend.models.Push;
+import me.thenightmancodeth.cirkit.backend.models.RealmDevice;
 import me.thenightmancodeth.cirkit.backend.models.RealmPush;
 import me.thenightmancodeth.cirkit.backend.models.ServerResponse;
 import retrofit2.Response;
@@ -108,10 +109,9 @@ public class MainActivity extends AppCompatActivity {
         //Get and display current device IP
         WifiManager wifiManager = (WifiManager)getApplicationContext().getSystemService(WIFI_SERVICE);
         int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
-        final String formIP = String.format(Locale.US, "%d.%d.%d.%d", (ipAddress & 0xff),
+        this.nodeIp = String.format(Locale.US, "%d.%d.%d.%d", (ipAddress & 0xff),
                 (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
-        this.nodeIp = formIP;
         startCirkitAndRegisterTimer();
     }
 
@@ -176,6 +176,20 @@ public class MainActivity extends AppCompatActivity {
             LayoutInflater inflater = getLayoutInflater();
             @SuppressLint("InflateParams") final View dialogView =
                     inflater.inflate(R.layout.first_launch_dialog, null);
+            final EditText ipET = (EditText)dialogView.
+                    findViewById(R.id.first_launch_server_et);
+            final EditText nameET = (EditText)dialogView.
+                    findViewById(R.id.first_launch_device_name);
+
+            //Check if the device has already been named and given a server IP
+            final RealmResults<RealmDevice> devices = realm.where(RealmDevice.class).findAll();
+            if (devices.size() > 0) {
+                ipET.setText(devices.get(0).getIp());
+                nameET.setText(devices.get(0).getName());
+            }
+            for (RealmDevice d: devices) {
+                Log.d("Device: ", d.getIp() +" " +d.getName());
+            }
             AlertDialog.Builder dialogbuilder =
                     new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.dialog))
                             .setTitle("Cirkit Server")
@@ -186,19 +200,23 @@ public class MainActivity extends AppCompatActivity {
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    EditText ipET = (EditText)dialogView.
-                                            findViewById(R.id.first_launch_server_et);
-                                    EditText nameET = (EditText)dialogView.
-                                            findViewById(R.id.first_launch_device_name);
-
                                     if (!ipET.getText().toString().isEmpty() && !nameET.getText().toString().isEmpty()) {
                                         String ip = ipET.getText().toString();
-                                        String name = nameET.getText().toString();
+                                        String deviceName = nameET.getText().toString();
                                         cirkit = new Cirkit(ip);
+                                        cirkit.setDeviceName(deviceName);
                                         makeSnackBar("Server IP set to: " + cirkit.getServerIP());
                                         edit.putBoolean("CirkitFirstLaunch", true);
                                         edit.apply();
-                                        cirkit.registerDevice(nodeIp, name,
+                                        //Save device info to realm
+                                        Realm realm = Realm.getDefaultInstance();
+                                        realm.beginTransaction();
+                                        devices.deleteAllFromRealm();
+                                        RealmDevice toRealm = realm.createObject(RealmDevice.class);
+                                        toRealm.setIp(ip);
+                                        toRealm.setName(deviceName);
+                                        realm.commitTransaction();
+                                        cirkit.registerDevice(nodeIp, deviceName,
                                                 new Cirkit.ServerResponseListener() {
                                                     @Override
                                                     public void onResponse(Response<ServerResponse> response) {

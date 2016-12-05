@@ -1,8 +1,8 @@
 package me.thenightmancodeth.cirkit.backend.models;
 
-/**
- * Created by andrewdiragi on 11/23/16.
- */
+/***************************************
+ * Created by TheNightman on 11/23/16. *
+ ***************************************/
 
 public class NodeDevice {
     private String ip;

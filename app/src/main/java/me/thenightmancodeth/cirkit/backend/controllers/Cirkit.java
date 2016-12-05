@@ -23,8 +23,6 @@ public class Cirkit {
     //TODO: Find server on network
     private String API_BASE_URL = "";
     private String DEVICE_NAME = "";
-    private Retrofit retrofit;
-    private final String TAG = "Cirkit";
     private ServerInterface si;
     private String IP = "10.0.0.35";
     public interface ServerResponseListener {
@@ -35,10 +33,9 @@ public class Cirkit {
     public Cirkit(String ip) {
         setServerIP(ip);
         //Creates retrofit object for making api objects
-        retrofit = new Retrofit.Builder()
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(API_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(/*enableLoggingGson*/))
-                //.client(enableLogging)
                 .build();
         //Creates ServerInterface object with retrofit
         si = retrofit.create(ServerInterface.class);
@@ -48,7 +45,7 @@ public class Cirkit {
      * Accepts IP address of server and sets BASE_URL
      * @param ip - Server IP address
      */
-    public void setServerIP(String ip) {
+    private void setServerIP(String ip) {
         this.API_BASE_URL = "http://" +ip +":6969/";
         this.IP = ip;
     }
@@ -93,19 +90,5 @@ public class Cirkit {
                 listener.onError(t);
             }
         });
-    }
-
-    private OkHttpClient enableLogging() {
-        //Logs all RetroFit activity
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-        httpClient.addInterceptor(logging);
-        return httpClient.build();
-    }
-
-    private Gson enableLoggingGson() {
-        //Creates lenient gson client
-        return new GsonBuilder().setLenient().create();
     }
 }

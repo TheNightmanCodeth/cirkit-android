@@ -22,10 +22,10 @@ import me.thenightmancodeth.cirkit.views.MainActivity;
  * network.                            *
  ***************************************/
 
-public class CirkitServer extends NanoHTTPD {
+class CirkitServer extends NanoHTTPD {
     private final String TAG = "SERVER";
     private MainActivity.OnPushReceivedListener listener;
-    public CirkitServer(MainActivity.OnPushReceivedListener l) throws IOException {
+    CirkitServer(MainActivity.OnPushReceivedListener l) throws IOException {
         //Sets port to listen on
         super(6969);
         //Sets listener to be run when push received
@@ -41,11 +41,11 @@ public class CirkitServer extends NanoHTTPD {
         Log.e(TAG, "Received push from IP: " +remoteIP);
         //TODO: check if device is already registered, if not register it to realm DB
         //Holds json object data
-        Map<String, String> jsonBody = new HashMap<String, String>();
+        Map<String, String> jsonBody = new HashMap<>();
         //Gets HTTP request method
         Method method = session.getMethod();
         //If the http request is a POST request,
-        if (method.POST.equals(method)) {
+        if (Method.POST.equals(method)) {
             try {
                 //Parse JSON data from post body
                 session.parseBody(jsonBody);
@@ -70,19 +70,11 @@ public class CirkitServer extends NanoHTTPD {
     }
 
     /**
-     * Used to set listener to be run on request received
-     * @param listener
-     */
-    public void setListener(MainActivity.OnPushReceivedListener listener) {
-        this.listener = listener;
-    }
-
-    /**
      * Extracts value from response string using Regular Expressions
      * @param dataRaw - Raw JSON string from post body
      * @return - Value from json pair
      */
-    public String extractVal(String dataRaw, String key) {
+    private String extractVal(String dataRaw, String key) {
         //{"msg":"DATA DATA", "from":"289.35.22.252"}
         String re1=".*?";	// Non-greedy match on filler
         String re2="\"(.*?)\"";	// Uninteresting: string

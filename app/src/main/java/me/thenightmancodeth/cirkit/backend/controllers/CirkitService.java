@@ -38,7 +38,7 @@ import me.thenightmancodeth.cirkit.R;
 
 public class CirkitService extends Service {
     CirkitServer server;
-    private final IBinder binder = new LocalBinder();
+    private final IBinder binder = new Binder();
     private static NotificationManagerCompat nm;
     private final Context ctx = CirkitService.this;
     private static NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
@@ -46,12 +46,6 @@ public class CirkitService extends Service {
     public static int pendingPushes = 0;
     private final int NOTIFICATION = 4200;
     private static int NEW_PUSH_NOT = 6960;
-
-    public class LocalBinder extends Binder {
-        CirkitService getService() {
-            return this.getService();
-        }
-    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, final int startId) {
