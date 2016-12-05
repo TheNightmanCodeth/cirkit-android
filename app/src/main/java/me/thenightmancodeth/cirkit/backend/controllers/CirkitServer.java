@@ -75,7 +75,7 @@ class CirkitServer extends NanoHTTPD {
      * @return - Value from json pair
      */
     private String extractVal(String dataRaw, String key) {
-        //{"msg":"DATA DATA", "from":"289.35.22.252"}
+        //{"msg":"DATA DATA", "from":"Device name"}
         String re1=".*?";	// Non-greedy match on filler
         String re2="\"(.*?)\"";	// Uninteresting: string
         String re3=".*?";	// Non-greedy match on filler
@@ -87,7 +87,9 @@ class CirkitServer extends NanoHTTPD {
             Log.i(TAG, matc.groupCount() +"");
             if (matc.group(1).equals(key)) {
                 try {
-                    return URLDecoder.decode(matc.group(2), "UTF-8");
+                    String toRet = URLDecoder.decode(matc.group(2).replaceAll(Pattern.quote("+"), "%2b"), "UTF-8");
+                    Log.e(TAG, toRet);
+                    return toRet;
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }

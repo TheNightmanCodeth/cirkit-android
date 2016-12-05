@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                     .getService(MainActivity.this, 0, cirkitService, 0);
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                    5000, AlarmManager.INTERVAL_HALF_DAY,
+                    SystemClock.elapsedRealtime(), AlarmManager.INTERVAL_HALF_DAY,
                     pendin);
         }
     }
