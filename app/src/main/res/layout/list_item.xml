@@ -11,16 +11,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <TextView
-            android:id="@+id/list_text"
-            android:textSize="24sp"
+            android:id="@+id/sender_list_text"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
             android:textColor="@android:color/black"
+            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/list_text"
+            android:textSize="18sp"
+            android:layout_below="@id/sender_list_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
-            android:layout_toStartOf="@id/linearLayout" />
+            android:layout_toStartOf="@+id/linearLayout" />
 
         <LinearLayout
             android:id="@+id/linearLayout"

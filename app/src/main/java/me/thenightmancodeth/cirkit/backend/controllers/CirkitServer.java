@@ -63,7 +63,7 @@ class CirkitServer extends NanoHTTPD {
             Log.e(TAG, tem);
         }
         //Runs listener from Constructor passing push value
-        listener.onPushRec(new Push(extractVal(tem, "msg"), remoteIP));
+        listener.onPushRec(new Push(extractVal(tem, "msg"), extractVal(tem, "sender")));
         //Returns response to client node
         return new Response(Response.Status.OK, MIME_PLAINTEXT,
                 "Push: " +extractVal(tem, "msg") +" received from: " +extractVal(tem, "sender"));

@@ -41,6 +41,7 @@ public class RealmRecycler extends RealmRecyclerViewAdapter<RealmPush, RealmRecy
     public void onBindViewHolder(PushListViewHolder holder, int position) {
         final RealmPush push = getData().get(position);
         holder.push.setText(push.getMsg());
+        holder.sender.setText(push.getSender());
         holder.copyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -63,12 +64,14 @@ public class RealmRecycler extends RealmRecyclerViewAdapter<RealmPush, RealmRecy
 
     class PushListViewHolder extends RecyclerView.ViewHolder {
         TextView push;
+        TextView sender;
         ImageButton copyButton;
         ImageButton deleButton;
 
         PushListViewHolder(View view) {
             super(view);
             push = (TextView)view.findViewById(R.id.list_text);
+            sender = (TextView) view.findViewById(R.id.sender_list_text);
             copyButton = (ImageButton) view.findViewById(R.id.copy);
             deleButton = (ImageButton) view.findViewById(R.id.delete);
         }
