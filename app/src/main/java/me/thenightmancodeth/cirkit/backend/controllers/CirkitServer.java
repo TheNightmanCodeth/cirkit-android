@@ -3,6 +3,8 @@ package me.thenightmancodeth.cirkit.backend.controllers;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -91,7 +93,13 @@ public class CirkitServer extends NanoHTTPD {
         while (matc.find()) {
             //Group 1 should be the key (msg)
             Log.i(TAG, matc.groupCount() +"");
-            if (matc.group(1).equals(key)) return matc.group(2);
+            if (matc.group(1).equals(key)) {
+                try {
+                    return URLDecoder.decode(matc.group(2), "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return null;
