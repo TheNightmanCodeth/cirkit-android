@@ -74,14 +74,18 @@ public class CirkitService extends Service {
                     style.setBigContentTitle(getString(R.string.app_name));
                     style.addLine(push.getPush());
                     style.setSummaryText(pendingPushes +" new pushes");
+                    //Bind notification dismiss receiver
+                    Intent receiverIntent = new Intent(CirkitService.this, NotificationDismissReceiver.class);
+                    receiverIntent.putExtra("me.thenightmancodeth.cirkit.4200", NOTIFICATION);
+                    PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), NOTIFICATION, receiverIntent, 0);
                     //Create notification
-
                     Notification noti = new NotificationCompat.Builder(ctx)
                             .setSmallIcon(R.drawable.ic_noti)
                             .setStyle(style)
                             .setGroupSummary(true)
                             .setNumber(pendingPushes)
                             .setSound(alarmSound)
+                            .setDeleteIntent(pendingIntent)
                             .setLights(Color.CYAN, 3000, 3000)
                             .setVibrate(new long[] {1000,1000})
                             .setContentIntent(onNotiClick)
