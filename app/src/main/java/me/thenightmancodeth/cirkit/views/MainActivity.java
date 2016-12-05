@@ -245,10 +245,6 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
                 recyclerView.setAdapter(adapter);
                 refreshLayout.setRefreshing(false);
-                RealmResults<RealmPush> pushes = realm.where(RealmPush.class).findAll();
-                for (RealmPush r: pushes) {
-                    Log.e(TAG, r.getMsg());
-                }
             }
         });
     }
