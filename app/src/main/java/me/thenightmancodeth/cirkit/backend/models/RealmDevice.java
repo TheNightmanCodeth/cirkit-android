@@ -2,9 +2,9 @@ package me.thenightmancodeth.cirkit.backend.models;
 
 import io.realm.RealmObject;
 
-/**
- * Created by joe on 12/4/16.
- */
+/***************************************
+ * Created by TheNightman on 12/4/16   *
+ ***************************************/
 
 public class RealmDevice extends RealmObject {
     private String serverIp;

@@ -3,9 +3,9 @@ package me.thenightmancodeth.cirkit.backend.models;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by joe on 11/30/16.
- */
+/***************************************
+ * Created by TheNightman on 11/30/16  *
+ ***************************************/
 
 public class RealmPush extends RealmObject {
     private int id;

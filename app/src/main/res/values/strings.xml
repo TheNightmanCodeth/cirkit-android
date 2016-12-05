@@ -4,4 +4,7 @@
     <string name="action_server_ip">Server IP</string>
     <string name="action_server_start">Start cirkit</string>
     <string name="persist_noti">Cirkit is running in the background</string>
+    <string name="prompt_push">Push…</string>
+    <string name="copy">Copy</string>
+    <string name="delete">Delete</string>
 </resources>

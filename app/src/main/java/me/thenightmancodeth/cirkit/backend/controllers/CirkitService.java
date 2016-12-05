@@ -31,9 +31,6 @@ import me.thenightmancodeth.cirkit.R;
  * the background. Needs to be         *
  * launched every ~12 hours or else    *
  * android will kill it.               *
- * (Samsung phones seem to kill it     *
- *   no matter what. For now just      *
- *   start the app when it stops)      *
  ***************************************/
 
 public class CirkitService extends Service {

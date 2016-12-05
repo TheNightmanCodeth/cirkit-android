@@ -30,7 +30,6 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import io.realm.Realm;
-import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import me.thenightmancodeth.cirkit.R;
 import me.thenightmancodeth.cirkit.backend.controllers.Cirkit;
@@ -237,17 +236,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void makeSnackBar(String content) {
+    public void makeSnackBar(String content) {
         Snackbar.make(findViewById(android.R.id.content), content, Snackbar.LENGTH_LONG).show();
-    }
-
-    public void itemClick(RealmPush data) {
-        //TODO: show alert with options
-        //Copy push to clipboard
-        ClipboardManager cb = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText(getString(R.string.app_name), data.getMsg());
-        cb.setPrimaryClip(clip);
-        makeSnackBar("Copied push to clipboard!");
     }
 
     private void initRecycler() {

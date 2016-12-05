@@ -1,30 +1,33 @@
 package me.thenightmancodeth.cirkit.backend.controllers;
 
-import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import io.realm.OrderedRealmCollection;
+import io.realm.Realm;
 import io.realm.RealmRecyclerViewAdapter;
 import me.thenightmancodeth.cirkit.R;
 import me.thenightmancodeth.cirkit.backend.models.RealmPush;
 import me.thenightmancodeth.cirkit.views.MainActivity;
 
-/**
- * Created by joe on 12/1/16.
- */
+import static android.content.Context.CLIPBOARD_SERVICE;
+
+/***************************************
+ * Created by TheNightman on 12/1/16   *
+ ***************************************/
 
 public class RealmRecycler extends RealmRecyclerViewAdapter<RealmPush, RealmRecycler.PushListViewHolder> {
-    private final MainActivity activity;
+    private MainActivity act;
 
     public RealmRecycler(MainActivity act, OrderedRealmCollection<RealmPush> pushes) {
         super(act, pushes, true);
-        this.activity = act;
+        this.act = act;
     }
 
     @Override
@@ -36,26 +39,38 @@ public class RealmRecycler extends RealmRecyclerViewAdapter<RealmPush, RealmRecy
 
     @Override
     public void onBindViewHolder(PushListViewHolder holder, int position) {
-        RealmPush push = getData().get(position);
-        holder.data = push;
+        final RealmPush push = getData().get(position);
         holder.push.setText(push.getMsg());
-        //TODO: set received from
+        holder.copyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Realm r = Realm.getDefaultInstance();
+                r.beginTransaction();
+                push.deleteFromRealm();
+                r.commitTransaction();
+            }
+        });
+        holder.deleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClipboardManager cb = (ClipboardManager) act.getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText(act.getString(R.string.app_name), push.getMsg());
+                cb.setPrimaryClip(clip);
+                act.makeSnackBar("Copied to clipboard!");
+            }
+        });
     }
 
-    class PushListViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
-        public TextView push;
-        public RealmPush data;
+    class PushListViewHolder extends RecyclerView.ViewHolder {
+        TextView push;
+        ImageButton copyButton;
+        ImageButton deleButton;
 
-        public PushListViewHolder(View view) {
+        PushListViewHolder(View view) {
             super(view);
             push = (TextView)view.findViewById(R.id.list_text);
-            view.setOnLongClickListener(this);
-        }
-
-        @Override
-        public boolean onLongClick(View view) {
-            activity.itemClick(data);
-            return false;
+            copyButton = (ImageButton) view.findViewById(R.id.copy);
+            deleButton = (ImageButton) view.findViewById(R.id.delete);
         }
     }
 }
