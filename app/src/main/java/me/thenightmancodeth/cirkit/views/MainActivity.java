@@ -3,8 +3,6 @@ package me.thenightmancodeth.cirkit.views;
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -195,7 +193,6 @@ public class MainActivity extends AppCompatActivity {
                             .setMessage("Welcome to Cirkit! Start the server on your computer, " +
                                     "and enter the IP you see here:")
                             .setView(dialogView)
-                            .setCancelable(false)
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
@@ -232,6 +229,9 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                             });
+            if (!ovrd) {
+                dialogbuilder.setCancelable(false);
+            }
             dialogbuilder.create().show();
         }
     }
