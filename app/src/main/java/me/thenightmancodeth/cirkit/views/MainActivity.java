@@ -24,7 +24,6 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
-import java.util.Calendar;
 import java.util.Locale;
 
 import io.realm.Realm;
@@ -138,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                     .getService(MainActivity.this, 0, cirkitService, 0);
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                    Calendar.getInstance().getTimeInMillis(), AlarmManager.INTERVAL_HALF_DAY,
+                    5000, AlarmManager.INTERVAL_HALF_DAY,
                     pendin);
         }
     }
