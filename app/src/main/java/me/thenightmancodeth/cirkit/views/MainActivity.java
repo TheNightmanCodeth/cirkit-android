@@ -2,6 +2,7 @@ package me.thenightmancodeth.cirkit.views;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,6 +11,7 @@ import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.IdRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,6 +27,12 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Toast;
+
+import java.util.List;
 import java.util.Locale;
 
 import io.realm.Realm;
@@ -33,11 +41,16 @@ import me.thenightmancodeth.cirkit.R;
 import me.thenightmancodeth.cirkit.backend.controllers.Cirkit;
 import me.thenightmancodeth.cirkit.backend.controllers.CirkitService;
 import me.thenightmancodeth.cirkit.backend.controllers.RealmRecycler;
+import me.thenightmancodeth.cirkit.backend.controllers.interfaces.ServerInterface;
+import me.thenightmancodeth.cirkit.backend.models.NodeDevice;
 import me.thenightmancodeth.cirkit.backend.models.Push;
 import me.thenightmancodeth.cirkit.backend.models.RealmDevice;
 import me.thenightmancodeth.cirkit.backend.models.RealmPush;
 import me.thenightmancodeth.cirkit.backend.models.ServerResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /***************************************
  * Created by TheNightman on 11/21/16. *
@@ -49,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private final String TAG = "MainActivity";
     private Realm realm;
+    private Context ctx = this;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor edit;
     public interface OnPushReceivedListener {
         void onPushRec(Push push);
     }
@@ -57,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        prefs = getSharedPreferences("Cirkit", MODE_PRIVATE);
+        setupRealm();
         Toolbar cardBar = (Toolbar)findViewById(R.id.card_toolbar);
         cardBar.inflateMenu(R.menu.menu_main);
         cardBar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
@@ -76,6 +94,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         final EditText pushET = (EditText)findViewById(R.id.pushET);
+        final ImageButton deviceSelect = (ImageButton)findViewById(R.id.devicePicker);
+        if (prefs.getString("serverIP", null) != null) {
+            cirkit = new Cirkit(prefs.getString("serverIP", null));
+        } else {
+            showServerAlert(true);
+        }
+        deviceSelect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDevicePicker();
+            }
+        });
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,10 +129,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         recyclerView = (RecyclerView)findViewById(R.id.push_rec);
-        setupRealm();
         initRecycler();
-        //Show the server alert if it's first start
-        showServerAlert(false);
         //Get and display current device IP
         WifiManager wifiManager = (WifiManager)getApplicationContext().getSystemService(WIFI_SERVICE);
         int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
@@ -165,7 +192,6 @@ public class MainActivity extends AppCompatActivity {
      * @param ovrd - If true, will show dialog whether it's first launch or not
      */
     private void showServerAlert(boolean ovrd) {
-        SharedPreferences prefs = getSharedPreferences("Cirkit", MODE_PRIVATE);
         boolean firstLaunch = prefs.getBoolean("CirkitFirstLaunch", false);
         if (!firstLaunch || ovrd) {
             Log.i(TAG, "firstLaunch");
@@ -188,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Device: ", d.getIp() +" " +d.getName());
             }
             AlertDialog.Builder dialogbuilder =
-                    new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.dialog))
+                    new AlertDialog.Builder(new ContextThemeWrapper(ctx, R.style.dialog))
                             .setTitle("Cirkit Server")
                             .setMessage("Welcome to Cirkit! Start the server on your computer, " +
                                     "and enter the IP you see here:")
@@ -199,10 +225,13 @@ public class MainActivity extends AppCompatActivity {
                                     if (!ipET.getText().toString().isEmpty() && !nameET.getText().toString().isEmpty()) {
                                         String ip = ipET.getText().toString();
                                         String deviceName = nameET.getText().toString();
+
                                         cirkit = new Cirkit(ip);
                                         cirkit.setDeviceName(deviceName);
+                                        cirkit.setServerIP(ip);
                                         makeSnackBar("Server IP set to: " + cirkit.getServerIP());
                                         edit.putBoolean("CirkitFirstLaunch", true);
+                                        edit.putString("serverIP", ip);
                                         edit.apply();
                                         //Save device info to realm
                                         Realm realm = Realm.getDefaultInstance();
@@ -260,6 +289,57 @@ public class MainActivity extends AppCompatActivity {
     private void setupRealm() {
         Realm.init(getApplicationContext());
         realm = Realm.getDefaultInstance();
+    }
+
+    private void showDevicePicker() {
+        ServerInterface r = cirkit.getRetrofit();
+        Call<List<NodeDevice>> call = r.getDevices();
+        call.enqueue(new Callback<List<NodeDevice>>() {
+            @Override
+            public void onResponse(Call<List<NodeDevice>> call, Response<List<NodeDevice>> response) {
+                LayoutInflater inflater = getLayoutInflater();
+                @SuppressLint("InflateParams") final View dialogView =
+                        inflater.inflate(R.layout.radio_dialog, null);
+                final List<NodeDevice> devices = response.body();
+                // Create radio button for each device in devices
+                RadioGroup rg = (RadioGroup) dialogView.findViewById(R.id.radio_group);
+                for (NodeDevice device: devices) {
+                    RadioButton deviceButton = new RadioButton(getApplicationContext());
+                    deviceButton.setText(device.getName());
+                    rg.addView(deviceButton);
+                }
+                // Listen for radio check change
+                rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
+                        RadioButton selected = (RadioButton)dialogView.findViewById(checkedId);
+                        String selectedName = selected.getText().toString();
+                        for (NodeDevice d: devices) {
+                            if (selectedName.equals(d.getName())) {
+                                Log.e("Set server ip:", d.getName() +" : " +d.getIp());
+                                cirkit = new Cirkit(d.getIp());
+                            }
+                        }
+                    }
+                });
+                final AlertDialog.Builder radioDialog =
+                    new AlertDialog.Builder(new ContextThemeWrapper(ctx, R.style.dialog))
+                    .setTitle("Select recipient")
+                    .setView(dialogView)
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                radioDialog.create().show();
+            }
+
+            @Override
+            public void onFailure(Call<List<NodeDevice>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override

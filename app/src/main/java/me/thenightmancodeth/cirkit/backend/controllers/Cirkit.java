@@ -25,6 +25,7 @@ public class Cirkit {
     private String DEVICE_NAME = "";
     private ServerInterface si;
     private String IP = "10.0.0.35";
+    Retrofit retrofit;
     public interface ServerResponseListener {
         void onResponse(Response<ServerResponse> response);
         void onError(Throwable t);
@@ -33,7 +34,7 @@ public class Cirkit {
     public Cirkit(String ip) {
         setServerIP(ip);
         //Creates retrofit object for making api objects
-        Retrofit retrofit = new Retrofit.Builder()
+        retrofit = new Retrofit.Builder()
                 .baseUrl(API_BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create(/*enableLoggingGson*/))
                 .build();
@@ -41,13 +42,21 @@ public class Cirkit {
         si = retrofit.create(ServerInterface.class);
     }
 
+    public ServerInterface getRetrofit() {
+        return si;
+    }
+
     /**
      * Accepts IP address of server and sets BASE_URL
      * @param ip - Server IP address
      */
-    private void setServerIP(String ip) {
+    public void setServerIP(String ip) {
         this.API_BASE_URL = "http://" +ip +":6969/";
         this.IP = ip;
+    }
+
+    public String getServerIP() {
+        return this.IP;
     }
 
     public void setDeviceName(String name) {
@@ -56,10 +65,6 @@ public class Cirkit {
 
     public String getDeviceName() {
         return DEVICE_NAME;
-    }
-
-    public String getServerIP() {
-        return IP;
     }
 
     public void sendPush(String push, String name, final ServerResponseListener listener) {
