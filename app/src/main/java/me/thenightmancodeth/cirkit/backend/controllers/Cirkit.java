@@ -1,5 +1,7 @@
 package me.thenightmancodeth.cirkit.backend.controllers;
 
+import android.support.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import me.thenightmancodeth.cirkit.backend.controllers.interfaces.ServerInterface;
@@ -67,14 +69,32 @@ public class Cirkit {
         return DEVICE_NAME;
     }
 
-    public void sendPush(String push, String name, final ServerResponseListener listener) {
-        Call<ServerResponse> call = si.sendPush(new Push(push, name));
+    /**
+     * Sends message to device
+     * @param push - The message to send
+     * @param name - This device
+     * @param ip - The device to send the push to. If null, push is sent to server
+     * @param listener - The listener, run on server response
+     */
+    public void sendPush(String push, String name, @Nullable String ip, final ServerResponseListener listener) {
+        //Create a new server interface to push with
+        ServerInterface toPushWith = si;
+        //If we're given an ip to send to, create a new serverinterface with a new retrofit instance
+        if (ip != null) {
+            //Create a new retrofit isntance with the ip provided
+            Retrofit r = new Retrofit.Builder()
+                    .baseUrl("http://" +ip +":6969/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            //Assign new value to the serverinterface used to push with
+            toPushWith = r.create(ServerInterface.class);
+        }
+        Call<ServerResponse> call = toPushWith.sendPush(new Push(push, name));
         call.enqueue(new Callback<ServerResponse>() {
             @Override
             public void onResponse(Call<ServerResponse> call, Response<ServerResponse> response) {
                 listener.onResponse(response);
             }
-
             @Override
             public void onFailure(Call<ServerResponse> call, Throwable t) {
                 listener.onError(t);

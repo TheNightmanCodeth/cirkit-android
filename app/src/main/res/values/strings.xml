@@ -7,4 +7,5 @@
     <string name="prompt_push">Push…</string>
     <string name="copy">Copy</string>
     <string name="delete">Delete</string>
+    <string name="Server">Server</string>
 </resources>

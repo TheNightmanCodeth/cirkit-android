@@ -114,7 +114,8 @@ public class MainActivity extends AppCompatActivity {
                 if (pushString.equals("")) {
                     makeSnackBar("Push cannot be null!");
                 } else {
-                    cirkit.sendPush(pushString, cirkit.getDeviceName(), new Cirkit.ServerResponseListener() {
+                    String sendTo = prefs.getString("selectedDevice", null);
+                    cirkit.sendPush(pushString, cirkit.getDeviceName(), sendTo, new Cirkit.ServerResponseListener() {
                         @Override
                         public void onResponse(Response<ServerResponse> response) {
                             Log.d(TAG, response.body().getResponse());
@@ -303,6 +304,9 @@ public class MainActivity extends AppCompatActivity {
                 final List<NodeDevice> devices = response.body();
                 // Create radio button for each device in devices
                 RadioGroup rg = (RadioGroup) dialogView.findViewById(R.id.radio_group);
+                RadioButton serverButton = new RadioButton(getApplicationContext());
+                serverButton.setText(R.string.Server);
+                rg.addView(serverButton);
                 for (NodeDevice device: devices) {
                     RadioButton deviceButton = new RadioButton(getApplicationContext());
                     deviceButton.setText(device.getName());
@@ -314,10 +318,14 @@ public class MainActivity extends AppCompatActivity {
                     public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
                         RadioButton selected = (RadioButton)dialogView.findViewById(checkedId);
                         String selectedName = selected.getText().toString();
+                        SharedPreferences.Editor editor = prefs.edit();
                         for (NodeDevice d: devices) {
                             if (selectedName.equals(d.getName())) {
-                                Log.e("Set server ip:", d.getName() +" : " +d.getIp());
-                                cirkit = new Cirkit(d.getIp());
+                                editor.putString("selectedDevice", d.getIp());
+                                editor.apply();
+                            } else if (selectedName.equals("Server")) {
+                                editor.putString("selectedDevice", null);
+                                editor.apply();
                             }
                         }
                     }
