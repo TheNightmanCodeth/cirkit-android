@@ -40,6 +40,7 @@ import io.realm.RealmResults;
 import me.thenightmancodeth.cirkit.R;
 import me.thenightmancodeth.cirkit.backend.controllers.Cirkit;
 import me.thenightmancodeth.cirkit.backend.controllers.CirkitService;
+import me.thenightmancodeth.cirkit.backend.controllers.NetScan;
 import me.thenightmancodeth.cirkit.backend.controllers.RealmRecycler;
 import me.thenightmancodeth.cirkit.backend.controllers.interfaces.ServerInterface;
 import me.thenightmancodeth.cirkit.backend.models.NodeDevice;
@@ -138,6 +139,10 @@ public class MainActivity extends AppCompatActivity {
                 (ipAddress >> 8 & 0xff),
                 (ipAddress >> 16 & 0xff), (ipAddress >> 24 & 0xff));
         startCirkitAndRegisterTimer();
+
+        //nmap test
+        NetScan ns = new NetScan(getApplicationContext());
+        ns.scan();
     }
 
     @Override

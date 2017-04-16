@@ -2,6 +2,9 @@ package me.thenightmancodeth.cirkit;
 
 import org.junit.Test;
 
+import me.thenightmancodeth.cirkit.backend.controllers.NetScan;
+import me.thenightmancodeth.cirkit.views.MainActivity;
+
 import static org.junit.Assert.*;
 
 /**
@@ -11,7 +14,10 @@ import static org.junit.Assert.*;
  */
 public class ExampleUnitTest {
     @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+    public void nmap() {
+        MainActivity ma = new MainActivity();
+        NetScan ns = new NetScan(ma.getApplicationContext());
+
+        ns.scan();
     }
 }
