@@ -5,7 +5,7 @@ Cirkit is an application for android/desktop that allows you to send data betwee
 Cirkit is different from major competition because it's completely decentralized! In laymens terms, this means that nobody besides you can see the data you send between devices.
 
 ## How to contribute
-Fork and send me PRs
+Fork and send me PRs  
 Open issues
 
 ## Installing
