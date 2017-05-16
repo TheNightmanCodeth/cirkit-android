@@ -1,15 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="me.thenightmancodeth.cirkit.views.MainActivity">
-    <item
-        android:id="@+id/action_server_ip"
+    tools:context="me.thenightmancodeth.cirkit2.MainActivity" >
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
         android:orderInCategory="100"
-        android:title="@string/action_server_ip"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_start_server"
-        android:orderInCategory="200"
-        android:title="@string/action_server_start"
         app:showAsAction="never" />
 </menu>
