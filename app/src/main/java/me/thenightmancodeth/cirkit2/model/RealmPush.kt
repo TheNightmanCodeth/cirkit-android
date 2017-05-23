@@ -17,11 +17,14 @@
  */
 package me.thenightmancodeth.cirkit2.model
 
+import io.realm.RealmObject
+
 /**
  * Created by TheNightman on 5/23/17.
  */
 
-data class Push(var device: String? = null) {
+open class RealmPush : RealmObject() {
+    var device: String? = null
     var stringMessage: String? = null
     var filePath: String? = null
 }

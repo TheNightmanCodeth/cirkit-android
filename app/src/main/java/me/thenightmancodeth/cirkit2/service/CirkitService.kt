@@ -23,14 +23,22 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
 import android.os.SystemClock
+import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
+import android.text.Html
 import android.util.Log
 import android.widget.Toast
+import io.realm.Realm
 import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.model.Push
+import me.thenightmancodeth.cirkit2.model.RealmPush
+import me.thenightmancodeth.cirkit2.network.Cirkit
 import me.thenightmancodeth.cirkit2.network.CirkitServer
 import me.thenightmancodeth.cirkit2.view.MainActivity
 import java.io.IOException
@@ -42,7 +50,10 @@ import java.net.BindException
 
 class CirkitService : Service() {
     lateinit var server: CirkitServer
-    lateinit var notificationManager: NotificationManagerCompat
+    var notificationManager: NotificationManagerCompat? = null
+    var pendingPushes: Int = 0
+    var style: NotificationCompat.InboxStyle = NotificationCompat.InboxStyle()
+    val NEW_PUSH_NOTI: Int = 3917
 
     interface OnPushReceivedLisener {
         fun onPushReceived(push: Push)
@@ -50,11 +61,49 @@ class CirkitService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("Cirkit_service", "Received start id $startId: $intent")
+        notificationManager = NotificationManagerCompat.from(this@CirkitService)
         try {
             //Start the NanoHTTPD server
             server = CirkitServer(object: OnPushReceivedLisener {
                 override fun onPushReceived(push: Push) {
                     println("Push received: ${push.stringMessage} from: ${push.device}")
+                    pendingPushes++
+                    val onNotiClick: PendingIntent = PendingIntent
+                            .getActivity(this@CirkitService, 0,
+                                    Intent(this@CirkitService, MainActivity::class.java), 0)
+                    val alarmSound: Uri = RingtoneManager
+                            .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                    style.setBigContentTitle(getString(R.string.app_name))
+                    style.addLine("${push.device}: ${push.stringMessage}")
+                    style.setSummaryText("$pendingPushes new pushes")
+
+                    //Bind notification dismiss receiver
+                    val receiverIntent: Intent = Intent(this@CirkitService, NotificationDismissReceiver::class.java)
+                    receiverIntent.putExtra("me.thenightmancodeth.cirkit2.4200", 4200)
+                    val pendingIntent: PendingIntent = PendingIntent.getBroadcast(applicationContext, 4200, receiverIntent,0)
+
+                    //Create notification
+                    val noti: Notification = NotificationCompat.Builder(this@CirkitService)
+                            .setSmallIcon(R.drawable.ic_noti)
+                            .setStyle(style)
+                            .setGroupSummary(true)
+                            .setContentTitle(getString(R.string.app_name))
+                            .setContentText(Html.fromHtml("<b>${push.device}</b>: ${push.stringMessage}"))
+                            .setNumber(pendingPushes)
+                            .setSound(alarmSound)
+                            .setDeleteIntent(pendingIntent)
+                            .setLights(Color.CYAN, 3000, 3000)
+                            .setVibrate(longArrayOf(1000, 1000))
+                            .setContentIntent(onNotiClick)
+                            .build()
+                    notificationManager?.notify(NEW_PUSH_NOTI, noti)
+
+                    val realm: Realm = Realm.getDefaultInstance()
+                    realm.beginTransaction()
+                    var toRealm: RealmPush = realm.createObject(RealmPush::class.java)
+                    toRealm.device = push.device
+                    toRealm.stringMessage = push.stringMessage
+                    realm.commitTransaction()
                 }
             })
             server.start()
@@ -84,8 +133,14 @@ class CirkitService : Service() {
     override fun onDestroy() {
         stopForeground(true)
         server.stop()
-        notificationManager.cancel(3918)
+        notificationManager?.cancel(3918)
         Toast.makeText(this, "Cirkit service stopped", Toast.LENGTH_SHORT).show()
+    }
+
+    fun resetPendingPushes() {
+        pendingPushes = 0
+        style = NotificationCompat.InboxStyle()
+        notificationManager?.cancel(NEW_PUSH_NOTI)
     }
 
     override fun onBind(intent: Intent?): IBinder {

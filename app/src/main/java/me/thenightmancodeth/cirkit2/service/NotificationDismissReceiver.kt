@@ -15,13 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package me.thenightmancodeth.cirkit2.model
+package me.thenightmancodeth.cirkit2.service
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 
 /**
  * Created by TheNightman on 5/23/17.
  */
 
-data class Push(var device: String? = null) {
-    var stringMessage: String? = null
-    var filePath: String? = null
+class NotificationDismissReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        println("Notification dismissed")
+        CirkitService().resetPendingPushes()
+    }
 }

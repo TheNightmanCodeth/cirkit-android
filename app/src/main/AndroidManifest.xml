@@ -22,7 +22,10 @@
             </intent-filter>
         </activity>
         <service android:name=".service.CirkitService" />
+        <receiver android:name=".service.NotificationDismissReceiver"
+            android:exported="false" >
 
+        </receiver>
     </application>
 
 </manifest>

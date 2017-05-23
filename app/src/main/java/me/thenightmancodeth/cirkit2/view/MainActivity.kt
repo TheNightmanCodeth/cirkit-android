@@ -35,6 +35,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import com.aditya.filebrowser.Constants
 import com.aditya.filebrowser.FileChooser
+import io.realm.Realm
 import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.network.Cirkit
 import me.thenightmancodeth.cirkit2.network.CirkitServer
@@ -53,6 +54,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Realm.init(this@MainActivity)
+
         stringMsg = findViewById(R.id.pushET) as EditText
         fab = findViewById(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { view ->
@@ -70,7 +73,6 @@ class MainActivity : AppCompatActivity() {
             picker.putExtra(Constants.SELECTION_MODE, Constants.SELECTION_MODES.SINGLE_SELECTION.ordinal)
             startActivityForResult(picker, PICK_FILE_REQUEST)
         }
-
 
         if (!isServiceRunning()) println("starting service"); startService()
     }
@@ -116,6 +118,11 @@ class MainActivity : AppCompatActivity() {
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
                 SystemClock.elapsedRealtime(), AlarmManager.INTERVAL_HALF_DAY,
                 pend)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        CirkitService().resetPendingPushes()
     }
 
     fun isServiceRunning(): Boolean {
