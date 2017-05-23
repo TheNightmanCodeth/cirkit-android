@@ -18,20 +18,25 @@
 package me.thenightmancodeth.cirkit2.network
 
 import fi.iki.elonen.NanoHTTPD
+import me.thenightmancodeth.cirkit2.model.Push
+import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.IOException
+import java.io.UnsupportedEncodingException
+import java.net.URLDecoder
+import java.util.regex.Pattern
 
 /**
  * Created by TheNightman on 5/22/17.
  */
 
-class CirkitServer() : NanoHTTPD(6969) {
+class CirkitServer(val listener: CirkitService.OnPushReceivedLisener) : NanoHTTPD(6969) {
     override fun serve(session: IHTTPSession?): Response {
-        
-        var remoteIP = session?.headers?.get("remote-addr")
+        val remoteIP = session?.headers?.get("remote-addr")
         println("Request from: $remoteIP")
+        val map: Map<String, String> = HashMap<String, String>()
         if (session?.method == Method.POST) {
             try {
-                session.parseBody(HashMap<String, String>())
+                session.parseBody(map)
             } catch (ioe: IOException) {
                 return Response(Response.Status.INTERNAL_ERROR,
                         MIME_PLAINTEXT,
@@ -41,9 +46,39 @@ class CirkitServer() : NanoHTTPD(6969) {
             }
         }
         var tmp = ""
-        var msg = session?.parms?.get("msg")
-        println("Push received: $msg")
+        session?.parms?.entries?.forEach { entry ->
+            tmp = entry.key
+        }
+
+        val pushString = tmp.singleKeyJsonExtract("msg")
+        //val pushFilePath = tmp.singleKeyJsonExtract("")
+        val push = Push(remoteIP!!)
+        push.stringMessage = pushString
+
+        listener.onPushReceived(push)
 
         return Response(Response.Status.OK, MIME_PLAINTEXT, "SERVER OK: Push received")
+    }
+
+    fun String.singleKeyJsonExtract(key: String): String {
+        //{"msg":"DATA DATA", "from":"Device name"}
+        val re1 = ".*?"
+        val re2 = "\"(.*?)\""
+        val re3 = ".*?"
+        val re4 = "\"(.*?)\""
+        val patt = Pattern.compile(re1 + re2 + re3 + re4, Pattern.CASE_INSENSITIVE or Pattern.DOTALL)
+        val matc = patt.matcher(this)
+
+        while (matc.find()) {
+            if (matc.group(1) == (key)) {
+                try {
+                    val toRet = URLDecoder.decode(matc.group(2).replace(Pattern.quote("+"), "%2b"), "UTF-8")
+                    return toRet
+                } catch (e: UnsupportedEncodingException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        return "ERR"
     }
 }

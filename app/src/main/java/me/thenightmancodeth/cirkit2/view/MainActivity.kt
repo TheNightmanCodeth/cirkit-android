@@ -19,9 +19,14 @@
 package me.thenightmancodeth.cirkit2.view
 
 import android.app.Activity
+import android.app.ActivityManager
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
@@ -32,12 +37,15 @@ import com.aditya.filebrowser.Constants
 import com.aditya.filebrowser.FileChooser
 import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.network.Cirkit
+import me.thenightmancodeth.cirkit2.network.CirkitServer
+import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
     val PICK_FILE_REQUEST = 595
     val cirkit = Cirkit()
     lateinit var filePicker: ImageButton
+    lateinit var devicePicker: ImageButton
     lateinit var stringMsg: EditText
     lateinit var fab: FloatingActionButton
 
@@ -51,12 +59,20 @@ class MainActivity : AppCompatActivity() {
             cirkit.sendStringPush(stringMsg.getText().toString())
         }
 
+        devicePicker = findViewById(R.id.devicePicker) as ImageButton
+        devicePicker.setOnClickListener { view ->
+
+        }
+
         filePicker = findViewById(R.id.filePicker) as ImageButton
         filePicker.setOnClickListener { view ->
             val picker = Intent(applicationContext, FileChooser::class.java)
             picker.putExtra(Constants.SELECTION_MODE, Constants.SELECTION_MODES.SINGLE_SELECTION.ordinal)
             startActivityForResult(picker, PICK_FILE_REQUEST)
         }
+
+
+        if (!isServiceRunning()) println("starting service"); startService()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -91,5 +107,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    fun startService() {
+        val cirkitService: Intent = Intent(this@MainActivity, CirkitService::class.java)
+        val pend: PendingIntent = PendingIntent.getService(this@MainActivity, 0, cirkitService, 0)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+                SystemClock.elapsedRealtime(), AlarmManager.INTERVAL_HALF_DAY,
+                pend)
+    }
+
+    fun isServiceRunning(): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        manager.getRunningServices(Int.MAX_VALUE).forEach { service ->
+            println(service.service.className)
+            if (CirkitService::class.java.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 }
