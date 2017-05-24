@@ -18,8 +18,6 @@
 
 package me.thenightmancodeth.cirkit2.network
 
-import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpPost
 import java.io.File
 

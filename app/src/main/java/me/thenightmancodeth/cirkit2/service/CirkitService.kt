@@ -17,18 +17,15 @@
  */
 package me.thenightmancodeth.cirkit2.service
 
-import android.app.AlarmManager
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Binder
 import android.os.IBinder
-import android.os.SystemClock
 import android.support.v4.app.NotificationCompat
 import android.support.v4.app.NotificationManagerCompat
 import android.text.Html
@@ -38,7 +35,6 @@ import io.realm.Realm
 import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.model.Push
 import me.thenightmancodeth.cirkit2.model.RealmPush
-import me.thenightmancodeth.cirkit2.network.Cirkit
 import me.thenightmancodeth.cirkit2.network.CirkitServer
 import me.thenightmancodeth.cirkit2.view.MainActivity
 import java.io.IOException

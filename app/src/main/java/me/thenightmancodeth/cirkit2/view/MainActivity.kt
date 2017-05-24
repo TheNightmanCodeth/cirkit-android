@@ -42,7 +42,6 @@ import com.aditya.filebrowser.FileChooser
 import io.realm.Realm
 import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.network.Cirkit
-import me.thenightmancodeth.cirkit2.network.CirkitServer
 import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.File
 

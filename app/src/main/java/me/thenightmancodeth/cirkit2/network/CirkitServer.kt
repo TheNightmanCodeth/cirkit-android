@@ -19,7 +19,6 @@ package me.thenightmancodeth.cirkit2.network
 
 import android.content.Context
 import android.os.Environment
-import android.support.v4.content.ContextCompat
 import fi.iki.elonen.NanoHTTPD
 import me.thenightmancodeth.cirkit2.model.Push
 import me.thenightmancodeth.cirkit2.service.CirkitService
