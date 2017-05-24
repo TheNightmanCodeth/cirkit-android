@@ -20,18 +20,15 @@ package me.thenightmancodeth.cirkit2.network
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.httpPost
 import java.io.File
 
 /**
  * Created by joe on 5/16/17.
  */
 class Cirkit {
-    init {
-        FuelManager.instance.basePath = "http://10.0.0.245:5500"
-    }
-
-    fun sendStringPush(msg: String) {
-        Fuel.post("/msg").body("{ \"msg\" : \"$msg\" }")
+    fun sendStringPush(msg: String, ip: String = "10.0.0.245") {
+        "http://$ip:5500/msg".httpPost().body("{ \"msg\" : \"$msg\" }")
                 .header(mapOf("Content-Type" to "application/json"))
                 .response { request, response, result ->
                     println(response)
@@ -42,8 +39,8 @@ class Cirkit {
                 }
     }
 
-    fun sendFilePush(file: File) {
-        Fuel.upload("/file").source { request, url ->
+    fun sendFilePush(file: File, ip: String = "10.0.0.245") {
+        "http://$ip/file".httpPost().source { request, url ->
             file
         }.name { "file" }.responseString {request, response, result ->
             println(response)
