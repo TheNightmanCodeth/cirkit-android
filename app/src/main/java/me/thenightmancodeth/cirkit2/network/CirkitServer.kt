@@ -17,11 +17,13 @@
  */
 package me.thenightmancodeth.cirkit2.network
 
+import android.content.Context
+import android.os.Environment
+import android.support.v4.content.ContextCompat
 import fi.iki.elonen.NanoHTTPD
 import me.thenightmancodeth.cirkit2.model.Push
 import me.thenightmancodeth.cirkit2.service.CirkitService
-import java.io.IOException
-import java.io.UnsupportedEncodingException
+import java.io.*
 import java.net.URLDecoder
 import java.util.regex.Pattern
 
@@ -29,35 +31,66 @@ import java.util.regex.Pattern
  * Created by TheNightman on 5/22/17.
  */
 
-class CirkitServer(val listener: CirkitService.OnPushReceivedLisener) : NanoHTTPD(6969) {
+class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: Context) : NanoHTTPD(6969) {
     override fun serve(session: IHTTPSession?): Response {
         val remoteIP = session?.headers?.get("remote-addr")
         println("Request from: $remoteIP")
         val map: Map<String, String> = HashMap<String, String>()
         if (session?.method == Method.POST) {
-            try {
-                session.parseBody(map)
-            } catch (ioe: IOException) {
-                return Response(Response.Status.INTERNAL_ERROR,
-                        MIME_PLAINTEXT,
-                        "SERVER INTERNAL ERROR: IOException: " + ioe.message)
-            } catch (re: ResponseException) {
-                return Response(re.status, MIME_PLAINTEXT, re.message)
+            if (session.headers.get("Content-Type") == "application/json") {
+                try {
+                    session.parseBody(map)
+                } catch (ioe: IOException) {
+                    return Response(Response.Status.INTERNAL_ERROR,
+                            MIME_PLAINTEXT,
+                            "SERVER INTERNAL ERROR: IOException: " + ioe.message)
+                } catch (re: ResponseException) {
+                    return Response(re.status, MIME_PLAINTEXT, re.message)
+                }
+
+                var tmp = ""
+                session?.parms?.entries?.forEach { entry ->
+                    tmp = entry.key
+                }
+
+                val pushString = tmp.singleKeyJsonExtract("msg")
+                //val pushFilePath = tmp.singleKeyJsonExtract("")
+                val push = Push(remoteIP!!)
+                push.stringMessage = pushString
+
+                listener.onPushReceived(push)
+
+                return Response(Response.Status.OK, MIME_PLAINTEXT, "SERVER OK: Push received")
+            } else { //if (session.headers?.get("content-type") == "multipart/form-data") {
+                println("File received...")
+                val files: Map<String, String> = HashMap<String, String>()
+                try {
+                    session.parseBody(files)
+                }catch (io: IOException) {
+                    io.printStackTrace()
+                }catch (re: ResponseException) {
+                    re.printStackTrace()
+                }
+
+                val keys: Set<String> = files.keys
+                var filePath: String? = null
+                keys.forEach { key ->
+                    println(key)
+                    val cachePath = files.get(key)
+                    val tempFile: File = File(cachePath)
+                    val filesDir = Environment.getExternalStorageDirectory().path
+                    val permFile = File("$filesDir/Download/$key")
+                    tempFile.copyTo(permFile, true)
+                    filePath = permFile.path
+                }
+
+                var push: Push = Push(remoteIP!!)
+                push.filePath = filePath
+
+                listener.onPushReceived(push)
             }
         }
-        var tmp = ""
-        session?.parms?.entries?.forEach { entry ->
-            tmp = entry.key
-        }
-
-        val pushString = tmp.singleKeyJsonExtract("msg")
-        //val pushFilePath = tmp.singleKeyJsonExtract("")
-        val push = Push(remoteIP!!)
-        push.stringMessage = pushString
-
-        listener.onPushReceived(push)
-
-        return Response(Response.Status.OK, MIME_PLAINTEXT, "SERVER OK: Push received")
+        return Response(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "SERVER ERR: Invalid request")
     }
 
     fun String.singleKeyJsonExtract(key: String): String {

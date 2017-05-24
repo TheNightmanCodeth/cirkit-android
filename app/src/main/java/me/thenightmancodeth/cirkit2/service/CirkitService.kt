@@ -66,7 +66,11 @@ class CirkitService : Service() {
             //Start the NanoHTTPD server
             server = CirkitServer(object: OnPushReceivedLisener {
                 override fun onPushReceived(push: Push) {
-                    println("Push received: ${push.stringMessage} from: ${push.device}")
+                    var message :String?
+                    if (push.stringMessage == "" || push.stringMessage == null) {
+                        message = push.filePath
+                    } else message = push.stringMessage
+                    println("Push received: $message from: ${push.device}")
                     pendingPushes++
                     val onNotiClick: PendingIntent = PendingIntent
                             .getActivity(this@CirkitService, 0,
@@ -74,8 +78,8 @@ class CirkitService : Service() {
                     val alarmSound: Uri = RingtoneManager
                             .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                     style.setBigContentTitle(getString(R.string.app_name))
-                    style.addLine("${push.device}: ${push.stringMessage}")
-                    style.setSummaryText("$pendingPushes new pushes")
+                    style.addLine("${push.device}: $message")
+                    style.setSummaryText(Html.fromHtml("<b>${push.device}</b>: ${message}"))
 
                     //Bind notification dismiss receiver
                     val receiverIntent: Intent = Intent(this@CirkitService, NotificationDismissReceiver::class.java)
@@ -88,7 +92,7 @@ class CirkitService : Service() {
                             .setStyle(style)
                             .setGroupSummary(true)
                             .setContentTitle(getString(R.string.app_name))
-                            .setContentText(Html.fromHtml("<b>${push.device}</b>: ${push.stringMessage}"))
+                            .setContentText(Html.fromHtml("<b>${push.device}</b>: ${message}"))
                             .setNumber(pendingPushes)
                             .setSound(alarmSound)
                             .setDeleteIntent(pendingIntent)
@@ -102,10 +106,12 @@ class CirkitService : Service() {
                     realm.beginTransaction()
                     var toRealm: RealmPush = realm.createObject(RealmPush::class.java)
                     toRealm.device = push.device
-                    toRealm.stringMessage = push.stringMessage
+                    if (push.stringMessage == null || push.stringMessage == "") {
+                        toRealm.filePath = push.filePath
+                    } else toRealm.stringMessage = push.stringMessage
                     realm.commitTransaction()
                 }
-            })
+            }, applicationContext)
             server.start()
         } catch (be:BindException) {
             be.printStackTrace()

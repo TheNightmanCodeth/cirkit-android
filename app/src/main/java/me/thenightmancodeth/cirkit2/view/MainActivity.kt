@@ -18,16 +18,20 @@
 
 package me.thenightmancodeth.cirkit2.view
 
+import android.Manifest
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.design.widget.FloatingActionButton
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -54,6 +58,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        println(filesDir.path.toString())
+
         Realm.init(this@MainActivity)
 
         stringMsg = findViewById(R.id.pushET) as EditText
@@ -72,6 +78,16 @@ class MainActivity : AppCompatActivity() {
             val picker = Intent(applicationContext, FileChooser::class.java)
             picker.putExtra(Constants.SELECTION_MODE, Constants.SELECTION_MODES.SINGLE_SELECTION.ordinal)
             startActivityForResult(picker, PICK_FILE_REQUEST)
+        }
+
+        //Check for permissions
+        val permissionCheck: Int = ContextCompat.checkSelfPermission(this@MainActivity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        println(permissionCheck)
+        println(PackageManager.PERMISSION_GRANTED)
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    690)
         }
 
         if (!isServiceRunning()) println("starting service"); startService()
