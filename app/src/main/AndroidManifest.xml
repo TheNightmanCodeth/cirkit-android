@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".view.IntroActivity"
-            android:label="intro" />
+            android:label="" android:theme="@style/Theme.AppCompat.NoActionBar" />
         <service android:name=".service.CirkitService" />
         <receiver android:name=".service.NotificationDismissReceiver"
             android:exported="false" >

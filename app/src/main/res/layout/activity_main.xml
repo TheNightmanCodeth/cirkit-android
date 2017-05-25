@@ -40,7 +40,7 @@
                             android:textColorHint="@android:color/white"
                             android:textColor="@android:color/white"
                             android:background="@android:color/transparent"
-                            android:hint="Send message" />
+                            android:hint="@string/send_hint" />
                         <LinearLayout
                             android:orientation="horizontal"
                             android:layout_width="wrap_content"
@@ -53,13 +53,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:layout_marginEnd="10dp"
-                                android:background="@android:color/transparent"                                />
+                                android:background="@android:color/transparent"
+                                android:contentDescription="@string/file_picker"/>
                             <ImageButton
                                 android:id="@+id/devicePicker"
                                 android:src="@drawable/ic_devices_white"
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-
+                                android:contentDescription="@string/device_picker"
                                 android:background="@android:color/transparent" />
                         </LinearLayout>
 

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Cirkit2</string>
+    <string name="send_hint">Send push</string>
+    <string name="file_picker">Attach file</string>
+    <string name="device_picker">Choose recipient node</string>
     <string name="action_settings">Settings</string>
 </resources>

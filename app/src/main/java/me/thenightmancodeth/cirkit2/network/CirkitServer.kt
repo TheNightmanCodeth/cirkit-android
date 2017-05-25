@@ -79,7 +79,7 @@ class CirkitServer(val listener: CirkitService.OnPushReceivedLisener) : NanoHTTP
                     filePath = permFile.path
                 }
 
-                var push: Push = Push(remoteIP!!)
+                val push: Push = Push(remoteIP!!)
                 push.filePath = filePath
 
                 listener.onPushReceived(push)

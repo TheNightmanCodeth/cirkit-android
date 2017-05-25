@@ -18,40 +18,44 @@
 package me.thenightmancodeth.cirkit2.view
 
 import android.Manifest
-import android.graphics.Color
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.PersistableBundle
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
-import com.github.paolorotolo.appintro.AppIntro
-import com.github.paolorotolo.appintro.AppIntroFragment
+import android.support.v4.content.ContextCompat
+import com.github.paolorotolo.appintro.AppIntro2
+import com.github.paolorotolo.appintro.AppIntro2Fragment
 import me.thenightmancodeth.cirkit2.R
 
 /**
  * Created by TheNightman on 5/24/17.
  */
 
-class IntroActivity : AppIntro() {
+class IntroActivity : AppIntro2() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //First slide - Welcome to Cirkit - Your cirkit consists of all registered devices on your network
-        addSlide(AppIntroFragment.newInstance("Welcome to Cirkit", "Your cirkit consists of all registered devices on your local network", 0, resources.getColor(R.color.colorAccent)))
+        addSlide(AppIntro2Fragment.newInstance("Welcome to Cirkit", "Your cirkit consists of all registered devices on your local network", R.drawable.logo, ContextCompat.getColor(applicationContext, R.color.colorPrimary)))
         //Second slide - Messager - Send and receive text messages to and from other devices on your cirkit
-        addSlide(AppIntroFragment.newInstance("Messenger", "Send text messages and links to other users on your local network", 0, resources.getColor(R.color.colorAccent)))
+        addSlide(AppIntro2Fragment.newInstance("Messenger", "Send and receive text messages and links to and from other devices on your cirkit", R.drawable.ic_messages, ContextCompat.getColor(applicationContext, R.color.colorPrimary)))
         //Third slide - Files - Send and receive files to and from other devices on your cirkit
-        addSlide(AppIntroFragment.newInstance("Files", "Send and receive files to and from other devices on your cirkit", 0, resources.getColor(R.color.colorAccent)))
+        addSlide(AppIntro2Fragment.newInstance("Files", "Send and receive files to and from other devices on your cirkit. Cirkit will need permission to write to your device storage for this feature.", R.drawable.ic_files, ContextCompat.getColor(applicationContext, R.color.colorPrimary)))
 
-        //Ask for file read/write permissions
-        askForPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE), 1)
-
-        // Override bar/separator color.
-        setBarColor(Color.parseColor("#3F51B5"))
-        setSeparatorColor(Color.parseColor("#2196F3"))
         //Don't show skip
         showSkipButton(false)
     }
 
     override fun onDonePressed(currentFragment: Fragment?) {
         super.onDonePressed(currentFragment)
+        //Check for permissions
+        val permissionCheck: Int = ContextCompat.checkSelfPermission(this@IntroActivity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        println(permissionCheck)
+        println(PackageManager.PERMISSION_GRANTED)
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this@IntroActivity, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    690)
+        }
         finish()
     }
 }
