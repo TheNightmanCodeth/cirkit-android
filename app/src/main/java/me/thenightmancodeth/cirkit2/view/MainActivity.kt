@@ -25,13 +25,16 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
+import android.preference.PreferenceManager
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.SharedPreferencesCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -44,10 +47,12 @@ import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.network.Cirkit
 import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.File
+import kotlin.coroutines.experimental.*
 
 class MainActivity : AppCompatActivity() {
     val PICK_FILE_REQUEST = 595
     val cirkit = Cirkit()
+    lateinit var prefs: SharedPreferences
     lateinit var filePicker: ImageButton
     lateinit var devicePicker: ImageButton
     lateinit var stringMsg: EditText
@@ -57,7 +62,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        println(filesDir.path.toString())
+        prefs = getSharedPreferences("Cirkit", Context.MODE_PRIVATE)
+
+        //if (prefs.getBoolean("first_launch", true)) {
+            val intro: Intent = Intent(this@MainActivity, IntroActivity::class.java)
+            startActivity(intro)
+            val e: SharedPreferences.Editor = prefs.edit()
+            e.putBoolean("first_launch", false)
+        //}
 
         Realm.init(this@MainActivity)
 
