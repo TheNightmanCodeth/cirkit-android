@@ -3,6 +3,7 @@ package me.thenightmancodeth.cirkit2
 import me.thenightmancodeth.cirkit2.network.Cirkit
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 /**
  * Created by joe on 5/17/17.
@@ -18,6 +19,6 @@ class CirkitTest {
     @Test
     fun testFileUL() {
         var file: File = File("res/test.png")
-        cirkit.sendImagePush(file=file)
+        cirkit.sendFilePush(file=file)
     }
 }

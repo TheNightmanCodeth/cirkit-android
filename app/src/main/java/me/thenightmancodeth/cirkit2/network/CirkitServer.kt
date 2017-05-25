@@ -30,6 +30,7 @@ import java.util.regex.Pattern
  * Created by TheNightman on 5/22/17.
  */
 
+
 class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: Context) : NanoHTTPD(6969) {
     override fun serve(session: IHTTPSession?): Response {
         val remoteIP = session?.headers?.get("remote-addr")
@@ -40,11 +41,11 @@ class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: C
                 try {
                     session.parseBody(map)
                 } catch (ioe: IOException) {
-                    return Response(Response.Status.INTERNAL_ERROR,
+                    return newFixedLengthResponse(Response.Status.INTERNAL_ERROR,
                             MIME_PLAINTEXT,
                             "SERVER INTERNAL ERROR: IOException: " + ioe.message)
                 } catch (re: ResponseException) {
-                    return Response(re.status, MIME_PLAINTEXT, re.message)
+                    return newFixedLengthResponse(re.status, MIME_PLAINTEXT, re.message)
                 }
 
                 var tmp = ""
@@ -59,7 +60,7 @@ class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: C
 
                 listener.onPushReceived(push)
 
-                return Response(Response.Status.OK, MIME_PLAINTEXT, "SERVER OK: Push received")
+                return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "SERVER OK: Push received")
             } else { //if (session.headers?.get("content-type") == "multipart/form-data") {
                 println("File received...")
                 val files: Map<String, String> = HashMap<String, String>()
@@ -89,7 +90,7 @@ class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: C
                 listener.onPushReceived(push)
             }
         }
-        return Response(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "SERVER ERR: Invalid request")
+        return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "SERVER ERR: Invalid request")
     }
 
     fun String.singleKeyJsonExtract(key: String): String {

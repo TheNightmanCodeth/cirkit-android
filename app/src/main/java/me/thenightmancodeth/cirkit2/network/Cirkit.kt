@@ -28,9 +28,9 @@ class Cirkit {
     fun sendStringPush(msg: String, ip: String = "10.0.0.245") {
         "http://$ip:5500/msg".httpPost().body("{ \"msg\" : \"$msg\" }")
                 .header(mapOf("Content-Type" to "application/json"))
-                .response { request, response, result ->
+                .response { _, response, result ->
                     println(response)
-                    val (bytes, error) = result
+                    val (bytes, _) = result
                     if (bytes != null) {
                         println(bytes)
                     }
@@ -38,11 +38,11 @@ class Cirkit {
     }
 
     fun sendFilePush(file: File, ip: String = "10.0.0.245") {
-        "http://$ip/file".httpPost().source { request, url ->
+        "http://$ip/file".httpPost().source { _, _ ->
             file
-        }.name { "file" }.responseString {request, response, result ->
+        }.name { "file" }.responseString {_, response, result ->
             println(response)
-            val (bytes, error) = result
+            val (bytes, _) = result
             if (bytes != null) {
                 println(bytes)
             }

@@ -11,8 +11,8 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
 
-        //Coroutines
-        classpath "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.12"
+        //Coroutines - Doesn't work?
+        //classpath "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.12"
 
         //Realm
         classpath "io.realm:realm-gradle-plugin:3.2.1"

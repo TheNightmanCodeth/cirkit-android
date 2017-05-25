@@ -30,11 +30,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
-import android.preference.PreferenceManager
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
-import android.support.v4.content.SharedPreferencesCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -47,7 +45,6 @@ import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.network.Cirkit
 import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.File
-import kotlin.coroutines.experimental.*
 
 class MainActivity : AppCompatActivity() {
     val PICK_FILE_REQUEST = 595
@@ -69,23 +66,24 @@ class MainActivity : AppCompatActivity() {
             startActivity(intro)
             val e: SharedPreferences.Editor = prefs.edit()
             e.putBoolean("first_launch", false)
+            e.apply()
         //}
 
         Realm.init(this@MainActivity)
 
         stringMsg = findViewById(R.id.pushET) as EditText
         fab = findViewById(R.id.fab) as FloatingActionButton
-        fab.setOnClickListener { view ->
-            cirkit.sendStringPush(stringMsg.getText().toString())
+        fab.setOnClickListener {
+            cirkit.sendStringPush(stringMsg.text.toString())
         }
 
         devicePicker = findViewById(R.id.devicePicker) as ImageButton
-        devicePicker.setOnClickListener { view ->
-
+        devicePicker.setOnClickListener {
+            TODO("Implement device picker")
         }
 
         filePicker = findViewById(R.id.filePicker) as ImageButton
-        filePicker.setOnClickListener { view ->
+        filePicker.setOnClickListener {
             val picker = Intent(applicationContext, FileChooser::class.java)
             picker.putExtra(Constants.SELECTION_MODE, Constants.SELECTION_MODES.SINGLE_SELECTION.ordinal)
             startActivityForResult(picker, PICK_FILE_REQUEST)
@@ -118,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                 filePicker.setImageDrawable(getDrawable(R.drawable.ic_folder_closed))
                 stringMsg.hint = file.name
                 stringMsg.isEnabled = false
-                fab.setOnClickListener{ view ->
+                fab.setOnClickListener{
                     cirkit.sendFilePush(file)
                 }
             }
