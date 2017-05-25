@@ -17,7 +17,6 @@
  */
 package me.thenightmancodeth.cirkit2.network
 
-import android.content.Context
 import android.os.Environment
 import fi.iki.elonen.NanoHTTPD
 import me.thenightmancodeth.cirkit2.model.Push
@@ -31,13 +30,13 @@ import java.util.regex.Pattern
  */
 
 
-class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: Context) : NanoHTTPD(6969) {
+class CirkitServer(val listener: CirkitService.OnPushReceivedLisener) : NanoHTTPD(6969) {
     override fun serve(session: IHTTPSession?): Response {
         val remoteIP = session?.headers?.get("remote-addr")
         println("Request from: $remoteIP")
         val map: Map<String, String> = HashMap<String, String>()
         if (session?.method == Method.POST) {
-            if (session.headers.get("Content-Type") == "application/json") {
+            if (session.headers["content-type"] == "application/json") {
                 try {
                     session.parseBody(map)
                 } catch (ioe: IOException) {
@@ -48,13 +47,9 @@ class CirkitServer(val listener: CirkitService.OnPushReceivedLisener, val ctx: C
                     return newFixedLengthResponse(re.status, MIME_PLAINTEXT, re.message)
                 }
 
-                var tmp = ""
-                session?.parms?.entries?.forEach { entry ->
-                    tmp = entry.key
-                }
+                val tmp = map["postData"]
 
-                val pushString = tmp.singleKeyJsonExtract("msg")
-                //val pushFilePath = tmp.singleKeyJsonExtract("")
+                val pushString = tmp?.singleKeyJsonExtract("msg")
                 val push = Push(remoteIP!!)
                 push.stringMessage = pushString
 
