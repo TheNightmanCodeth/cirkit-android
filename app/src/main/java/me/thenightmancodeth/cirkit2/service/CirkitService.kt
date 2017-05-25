@@ -107,7 +107,7 @@ class CirkitService : Service() {
                     } else toRealm.stringMessage = push.stringMessage
                     realm.commitTransaction()
                 }
-            }, applicationContext)
+            })
             server.start()
         } catch (be:BindException) {
             be.printStackTrace()
