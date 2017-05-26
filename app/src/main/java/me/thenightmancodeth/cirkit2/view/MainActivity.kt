@@ -28,12 +28,10 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
-import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.EditText
-import android.widget.ImageButton
 import com.aditya.filebrowser.Constants
 import com.aditya.filebrowser.FileChooser
 import io.realm.Realm
@@ -41,15 +39,13 @@ import me.thenightmancodeth.cirkit2.R
 import me.thenightmancodeth.cirkit2.network.Cirkit
 import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.File
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
     val PICK_FILE_REQUEST = 595
     val cirkit = Cirkit()
     lateinit var prefs: SharedPreferences
-    lateinit var filePicker: ImageButton
-    lateinit var devicePicker: ImageButton
-    lateinit var stringMsg: EditText
-    lateinit var fab: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,18 +63,14 @@ class MainActivity : AppCompatActivity() {
 
         Realm.init(this@MainActivity)
 
-        stringMsg = findViewById(R.id.pushET) as EditText
-        fab = findViewById(R.id.fab) as FloatingActionButton
         fab.setOnClickListener {
             cirkit.sendStringPush(stringMsg.text.toString())
         }
 
-        devicePicker = findViewById(R.id.devicePicker) as ImageButton
         devicePicker.setOnClickListener {
             TODO("Implement device picker")
         }
 
-        filePicker = findViewById(R.id.filePicker) as ImageButton
         filePicker.setOnClickListener {
             val picker = Intent(applicationContext, FileChooser::class.java)
             picker.putExtra(Constants.SELECTION_MODE, Constants.SELECTION_MODES.SINGLE_SELECTION.ordinal)
@@ -144,5 +136,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return false
+    }
+
+    private fun pushRecycler() {
+        pushRecycler.layoutManager = LinearLayoutManager(this)
+        //val adapter: RealmRecycler = RealmRecycler(this, realm.where(RealmPush::class.java).findAllAsync())
+
+        //pushRecycler.adapter = adapter
+        pushRecycler.setHasFixedSize(true)
     }
 }
