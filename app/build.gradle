@@ -51,6 +51,9 @@ dependencies {
     testCompile "com.nhaarman:mockito-kotlin:1.4.0"
     testCompile 'org.jetbrains.kotlin:kotlin-test-junit:1.1.2-3'
 
+    //RealmAdapter
+    compile 'io.realm:android-adapters:2.0.0'
+
     //AppIntro
     compile 'com.github.paolorotolo:appintro:4.1.0'
 

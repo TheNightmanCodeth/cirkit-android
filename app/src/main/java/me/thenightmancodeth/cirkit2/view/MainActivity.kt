@@ -22,14 +22,14 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.aditya.filebrowser.Constants
@@ -41,6 +41,7 @@ import me.thenightmancodeth.cirkit2.service.CirkitService
 import java.io.File
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import me.thenightmancodeth.cirkit2.model.RealmPush
 
 class MainActivity : AppCompatActivity() {
     val PICK_FILE_REQUEST = 595
@@ -53,13 +54,13 @@ class MainActivity : AppCompatActivity() {
 
         prefs = getSharedPreferences("Cirkit", Context.MODE_PRIVATE)
 
-        //if (prefs.getBoolean("first_launch", true)) {
+        if (prefs.getBoolean("first_launch", true)) {
             val intro: Intent = Intent(this@MainActivity, IntroActivity::class.java)
             startActivity(intro)
             val e: SharedPreferences.Editor = prefs.edit()
             e.putBoolean("first_launch", false)
             e.apply()
-        //}
+        }
 
         Realm.init(this@MainActivity)
 
@@ -76,6 +77,8 @@ class MainActivity : AppCompatActivity() {
             picker.putExtra(Constants.SELECTION_MODE, Constants.SELECTION_MODES.SINGLE_SELECTION.ordinal)
             startActivityForResult(picker, PICK_FILE_REQUEST)
         }
+
+        pushRecycler()
 
         if (!isServiceRunning()) println("starting service"); startService()
     }
@@ -140,9 +143,41 @@ class MainActivity : AppCompatActivity() {
 
     private fun pushRecycler() {
         pushRecycler.layoutManager = LinearLayoutManager(this)
-        //val adapter: RealmRecycler = RealmRecycler(this, realm.where(RealmPush::class.java).findAllAsync())
 
-        //pushRecycler.adapter = adapter
+        val adapter: RealmRVAdapter = RealmRVAdapter(Realm.getDefaultInstance()
+                .where(RealmPush::class.java).findAllAsync(), { msg: String ->
+            val cb: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE)
+                    as ClipboardManager
+            val clip = ClipData.newPlainText(getString(R.string.app_name), msg)
+
+            cb.primaryClip = clip
+            Snackbar.make(coordinator, "Copied push to clipboard", Snackbar.LENGTH_SHORT).show()
+        }, {push, adapter ->
+            val r: Realm = Realm.getDefaultInstance()
+            r.transaction { push.deleteFromRealm() }
+            adapter.notifyDataSetChanged()
+            Snackbar.make(coordinator, "Push removed", Snackbar.LENGTH_LONG).setAction("UNDO",
+                    {_ ->
+                        try {
+                            r.transaction {
+                                val copy = createObject(RealmPush::class.java)
+                                copy.device = push.device
+                                copy.filePath = push.filePath
+                                copy.stringMessage = push.stringMessage
+                            }
+                            adapter.notifyDataSetChanged()
+                        } catch (e: Exception) {
+                            Log.e("Cirkit2", e.toString())
+                        }
+                    }).show()
+        })
+
+        pushRecycler.adapter = adapter
         pushRecycler.setHasFixedSize(true)
+    }
+    inline fun Realm.transaction(body: Realm.() -> Unit) {
+        beginTransaction()
+        body(this)
+        commitTransaction()
     }
 }

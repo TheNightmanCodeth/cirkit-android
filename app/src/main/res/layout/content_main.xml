@@ -8,5 +8,9 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main"
     tools:context="me.thenightmancodeth.cirkit2.view.MainActivity">
-
+        <android.support.v7.widget.RecyclerView
+            android:layout_marginTop="5dp"
+            android:id="@+id/pushRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 </android.support.constraint.ConstraintLayout>
